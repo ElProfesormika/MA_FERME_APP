@@ -462,32 +462,32 @@ $devise_actuelle = getDeviseActuelle();
             <div class="col-12">
                 <div class="module-card">
                     <h4><i class="fas fa-tachometer-alt text-primary me-2"></i> Accès rapides</h4>
-                                         <div class="row">
-                         <div class="col-md-3">
-                             <a href="check_database.php" class="btn btn-outline-primary w-100 mb-2 btn-module">
-                                 <i class="fas fa-database me-2"></i> Vérifier DB
-                             </a>
-                         </div>
-                         <?php if (hasPermission('convertisseur_devises')): ?>
-                         <div class="col-md-3">
-                             <a href="convertisseur_devises.php" class="btn btn-outline-success w-100 mb-2 btn-module">
-                                 <i class="fas fa-exchange-alt me-2"></i> Convertisseur devises
-                             </a>
-                         </div>
-                         <?php endif; ?>
-                         <?php if (hasPermission('parametres')): ?>
-                         <div class="col-md-3">
-                             <a href="install_infinityfree.php" class="btn btn-outline-info w-100 mb-2 btn-module">
-                                 <i class="fas fa-cog me-2"></i> Configuration
-                             </a>
-                         </div>
-                         <div class="col-md-3">
-                             <a href="clean_installation.php" class="btn btn-outline-warning w-100 mb-2 btn-module">
-                                 <i class="fas fa-broom me-2"></i> Nettoyer
-                             </a>
-                         </div>
-                         <?php endif; ?>
-                     </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="test_sqlite.php" class="btn btn-outline-primary w-100 mb-2 btn-module">
+                                <i class="fas fa-database me-2"></i> Vérifier DB
+                            </a>
+                        </div>
+                        <?php if (hasPermission('convertisseur_devises')): ?>
+                        <div class="col-md-3">
+                            <a href="convertisseur_devises.php" class="btn btn-outline-success w-100 mb-2 btn-module">
+                                <i class="fas fa-exchange-alt me-2"></i> Convertisseur devises
+                            </a>
+                        </div>
+                        <?php endif; ?>
+                        <?php if (hasPermission('parametres')): ?>
+                        <div class="col-md-3">
+                            <a href="init_sqlite.php" class="btn btn-outline-info w-100 mb-2 btn-module">
+                                <i class="fas fa-cog me-2"></i> Initialiser DB
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="gestion_utilisateurs.php" class="btn btn-outline-warning w-100 mb-2 btn-module">
+                                <i class="fas fa-users me-2"></i> Gestion Utilisateurs
+                            </a>
+                        </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
