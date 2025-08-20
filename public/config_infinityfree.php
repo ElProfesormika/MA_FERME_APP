@@ -155,7 +155,7 @@ function formaterMontant($montant, $devise = 'FCFA') {
 
 // Fonction pour obtenir la devise actuelle
 function getDeviseActuelle() {
-    if (session_status() === PHP_SESSION_NONE) {
+    if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
         session_start();
     }
     
@@ -170,7 +170,7 @@ function getDeviseActuelle() {
 
 // Fonction pour changer la devise
 function setDeviseActuelle($devise) {
-    if (session_status() === PHP_SESSION_NONE) {
+    if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
         session_start();
     }
     
@@ -214,8 +214,8 @@ function convertirDevise($montant, $devise_source = 'FCFA', $devise_cible = 'FCF
     return $montant; // Retourne le montant original si conversion non possible
 }
 
-// Initialisation de la session
-if (session_status() === PHP_SESSION_NONE) {
+// Initialisation de la session (seulement si pas déjà démarrée et pas d'output)
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 ?>
