@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ");
                     $success = $stmt->execute([
                         $_POST['titre'] ?? 'Alerte',
-                        $_POST['description'],
+                        $_POST['message'] ?? '',
                         $_POST['type'],
                         $_POST['priorite'] ?? 'normale'
                     ]);
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ");
                     $success = $stmt->execute([
                         $_POST['titre'] ?? 'Alerte',
-                        $_POST['description'],
+                        $_POST['message'] ?? '',
                         $_POST['type'],
                         $_POST['priorite'] ?? 'normale',
                         $_POST['statut'],
@@ -506,7 +506,7 @@ $message = $_GET['message'] ?? '';
                                 <tr class="alerte-<?= $alerte['statut'] === 'resolue' ? 'resolue' : $alerte['priorite'] ?>">
                                     <td>
                                         <strong><?= htmlspecialchars($alerte['titre']) ?></strong>
-                                        <?php if ($alerte['message']): ?>
+                                        <?php if (isset($alerte['message']) && $alerte['message']): ?>
                                             <br><small class="text-muted"><?= htmlspecialchars($alerte['message']) ?></small>
                                         <?php endif; ?>
                                     </td>
@@ -526,16 +526,7 @@ $message = $_GET['message'] ?? '';
                                         </span>
                                     </td>
                                     <td><?= date('d/m/Y H:i', strtotime($alerte['date_creation'])) ?></td>
-                                    <td>
-                                        <?php if ($alerte['date_echeance']): ?>
-                                            <?= date('d/m/Y', strtotime($alerte['date_echeance'])) ?>
-                                            <?php if (strtotime($alerte['date_echeance']) <= time()): ?>
-                                                <span class="badge bg-danger ms-1">En retard</span>
-                                            <?php endif; ?>
-                                        <?php else: ?>
-                                            -
-                                        <?php endif; ?>
-                                    </td>
+                                    <td>-</td>
                                     <td>
                                         <span class="text-muted">-</span>
                                     </td>
@@ -594,8 +585,8 @@ $message = $_GET['message'] ?? '';
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="3"></textarea>
+                            <label class="form-label">Message</label>
+                            <textarea class="form-control" name="message" rows="3"></textarea>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
@@ -610,12 +601,7 @@ $message = $_GET['message'] ?? '';
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Date d'échéance</label>
-                                    <input type="date" class="form-control" name="date_echeance">
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -661,8 +647,8 @@ $message = $_GET['message'] ?? '';
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
+                            <label class="form-label">Message</label>
+                            <textarea class="form-control" name="message" id="edit_message" rows="3"></textarea>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
@@ -686,12 +672,7 @@ $message = $_GET['message'] ?? '';
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Date d'échéance</label>
-                                    <input type="date" class="form-control" name="date_echeance" id="edit_date_echeance">
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -748,10 +729,10 @@ $message = $_GET['message'] ?? '';
             document.getElementById('edit_id').value = alerte.id;
             document.getElementById('edit_titre').value = alerte.titre;
             document.getElementById('edit_type').value = alerte.type;
-            document.getElementById('edit_description').value = alerte.description || '';
+            document.getElementById('edit_message').value = alerte.message || '';
             document.getElementById('edit_priorite').value = alerte.priorite;
             document.getElementById('edit_statut').value = alerte.statut;
-            document.getElementById('edit_date_echeance').value = alerte.date_echeance || '';
+    
             
             new bootstrap.Modal(document.getElementById('editAlerteModal')).show();
         }
