@@ -1,6 +1,6 @@
 <?php
 // Inclure la configuration
-require_once 'config_infinityfree.php';
+require_once 'config_sqlite.php';
 require_once 'auth_config.php';
 
 // Initialiser les variables
