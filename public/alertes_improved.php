@@ -247,7 +247,7 @@ function getAlerteStats($db) {
     $stats['critiques'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // Alertes aujourd'hui
-    $stmt = $db->query("SELECT COUNT(*) as total FROM alertes WHERE DATE(date_creation) = CURDATE()");
+    $stmt = $db->query("SELECT COUNT(*) as total FROM alertes WHERE date(date_creation) = date('now')");
     $stats['aujourdhui'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     return $stats;

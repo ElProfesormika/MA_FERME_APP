@@ -40,9 +40,12 @@ try {
             race TEXT,
             date_naissance DATE,
             poids REAL,
+            sexe TEXT,
+            employe_id INTEGER,
             statut TEXT DEFAULT 'actif',
             notes TEXT,
-            date_creation DATETIME DEFAULT CURRENT_TIMESTAMP
+            date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (employe_id) REFERENCES employes(id)
         )
     ");
     echo "<p>✅ Table animaux créée</p>";
@@ -93,8 +96,11 @@ try {
             heure_fin TIME,
             type TEXT,
             statut TEXT DEFAULT 'planifie',
-            responsable TEXT,
-            date_creation DATETIME DEFAULT CURRENT_TIMESTAMP
+            employe_id INTEGER,
+            animal_id INTEGER,
+            date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (employe_id) REFERENCES employes(id),
+            FOREIGN KEY (animal_id) REFERENCES animaux(id)
         )
     ");
     echo "<p>✅ Table activités créée</p>";

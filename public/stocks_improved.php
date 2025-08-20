@@ -92,7 +92,7 @@ function getStocks($db) {
         SELECT s.*, 
                CASE 
                    WHEN s.quantite <= 10 THEN 'faible'
-                   WHEN s.date_peremption IS NOT NULL AND s.date_peremption <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 'perime'
+                   WHEN s.date_peremption IS NOT NULL AND s.date_peremption <= date('now', '+30 days') THEN 'perime'
                    ELSE 'normal'
                END as statut_alerte
         FROM stocks s
@@ -116,7 +116,7 @@ function getStockStats($db) {
     $stats['rupture'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // Produits périmes
-    $stmt = $db->query("SELECT COUNT(*) as total FROM stocks WHERE date_peremption IS NOT NULL AND date_peremption <= CURDATE()");
+    $stmt = $db->query("SELECT COUNT(*) as total FROM stocks WHERE date_peremption IS NOT NULL AND date_peremption <= date('now')");
     $stats['perime'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // Valeur totale du stock

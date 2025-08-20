@@ -403,7 +403,7 @@ if ($db) {
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div>
                                     <h5 class="card-title mb-1">
-                                        <?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?>
+                                        <?= htmlspecialchars($user['nom_complet']) ?>
                                         <?php if ($user['id'] == $_SESSION['user_id']): ?>
                                             <span class="badge bg-secondary">Vous</span>
                                         <?php endif; ?>
@@ -411,7 +411,7 @@ if ($db) {
                                     <p class="text-muted mb-1">
                                         <i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?>
                                     </p>
-                                    <?php if ($user['telephone']): ?>
+                                    <?php if (isset($user['telephone']) && $user['telephone']): ?>
                                         <p class="text-muted mb-1">
                                             <i class="fas fa-phone"></i> <?= htmlspecialchars($user['telephone']) ?>
                                         </p>
@@ -430,7 +430,7 @@ if ($db) {
                             
                             <div class="small text-muted mb-3">
                                 <i class="fas fa-calendar"></i> Créé le <?= date('d/m/Y', strtotime($user['date_creation'])) ?>
-                                <?php if ($user['derniere_connexion']): ?>
+                                <?php if (isset($user['derniere_connexion']) && $user['derniere_connexion']): ?>
                                     <br><i class="fas fa-clock"></i> Dernière connexion : <?= date('d/m/Y H:i', strtotime($user['derniere_connexion'])) ?>
                                 <?php endif; ?>
                             </div>
