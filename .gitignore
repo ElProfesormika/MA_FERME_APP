@@ -2,6 +2,12 @@
 public/db_config.php
 public/config_local.php
 
+# Base de données SQLite
+database/
+*.db
+*.sqlite
+*.sqlite3
+
 # Logs
 *.log
 logs/

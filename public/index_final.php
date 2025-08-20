@@ -1,6 +1,6 @@
 <?php
 // Inclure la configuration sécurisée
-require_once 'config_infinityfree.php';
+require_once 'config_sqlite.php';
 require_once 'auth_config.php';
 
 // Vérifier si l'utilisateur est connecté
