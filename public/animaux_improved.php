@@ -226,9 +226,13 @@ $message = $_GET['message'] ?? '';
                                     <td><?= date('d/m/Y', strtotime($animal['date_naissance'])) ?></td>
                                     <td><?= $animal['poids'] ? number_format($animal['poids'], 1) : '-' ?></td>
                                     <td>
-                                        <span class="badge bg-<?= $animal['sexe'] === 'male' ? 'primary' : 'pink' ?>">
-                                            <?= ucfirst($animal['sexe']) ?>
-                                        </span>
+                                        <?php if ($animal['sexe']): ?>
+                                            <span class="badge bg-<?= $animal['sexe'] === 'male' ? 'primary' : 'pink' ?>">
+                                                <?= ucfirst($animal['sexe']) ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <?= $animal['employe_nom_complet'] ? htmlspecialchars($animal['employe_nom_complet']) : '-' ?>

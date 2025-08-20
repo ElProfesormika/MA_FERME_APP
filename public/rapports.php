@@ -325,7 +325,7 @@ function generatePDF($title, $data, $headers) {
     foreach ($data as $row) {
         echo '<tr>';
         foreach ($row as $value) {
-            echo '<td>' . htmlspecialchars($value) . '</td>';
+            echo '<td>' . htmlspecialchars($value ?? '') . '</td>';
         }
         echo '</tr>';
     }

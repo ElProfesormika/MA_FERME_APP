@@ -140,11 +140,11 @@ try {
     
     // Animaux de test
     $db->exec("
-        INSERT OR IGNORE INTO animaux (nom, espece, race, date_naissance, poids, statut) VALUES
-        ('Bella', 'Vache', 'Holstein', '2020-03-15', 650.5, 'actif'),
-        ('Max', 'Cochon', 'Large White', '2021-06-20', 120.0, 'actif'),
-        ('Luna', 'Poule', 'Pondeuse', '2022-01-10', 2.5, 'actif'),
-        ('Rocky', 'Mouton', 'Mérinos', '2021-09-05', 45.0, 'actif')
+        INSERT OR IGNORE INTO animaux (nom, espece, race, date_naissance, poids, sexe, statut) VALUES
+        ('Bella', 'Vache', 'Holstein', '2020-03-15', 650.5, 'femelle', 'actif'),
+        ('Max', 'Cochon', 'Large White', '2021-06-20', 120.0, 'male', 'actif'),
+        ('Luna', 'Poule', 'Pondeuse', '2022-01-10', 2.5, 'femelle', 'actif'),
+        ('Rocky', 'Mouton', 'Mérinos', '2021-09-05', 45.0, 'male', 'actif')
     ");
     echo "<p>✅ Animaux de test créés</p>";
     
