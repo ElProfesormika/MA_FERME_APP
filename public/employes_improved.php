@@ -26,12 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $salaire_saisi = isset($_POST['salaire']) ? (float)$_POST['salaire'] : 0.0;
                     $salaire_fcfa = ($devise_actuelle === 'FCFA') ? $salaire_saisi : convertirDevise($salaire_saisi, $devise_actuelle, 'FCFA');
                     $stmt = $db->prepare("
-                        INSERT INTO employes (nom, prenom, poste, date_embauche, salaire, telephone, email, adresse, statut, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'actif', NOW(), NOW())
+                        INSERT INTO employes (nom_complet, poste, date_embauche, salaire, telephone, email, adresse, statut, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, 'actif', NOW(), NOW())
                     ");
                     $success = $stmt->execute([
-                        $_POST['nom'],
-                        $_POST['prenom'],
+                        $_POST['nom_complet'],
                         $_POST['poste'],
                         $_POST['date_embauche'],
                         $salaire_fcfa,
@@ -50,12 +49,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $salaire_fcfa = ($devise_actuelle === 'FCFA') ? $salaire_saisi : convertirDevise($salaire_saisi, $devise_actuelle, 'FCFA');
                     $stmt = $db->prepare("
                         UPDATE employes 
-                        SET nom = ?, prenom = ?, poste = ?, date_embauche = ?, salaire = ?, telephone = ?, email = ?, adresse = ?, statut = ?, updated_at = NOW()
+                        SET nom_complet = ?, poste = ?, date_embauche = ?, salaire = ?, telephone = ?, email = ?, adresse = ?, statut = ?, updated_at = NOW()
                         WHERE id = ?
                     ");
                     $success = $stmt->execute([
-                        $_POST['nom'],
-                        $_POST['prenom'],
+                        $_POST['nom_complet'],
                         $_POST['poste'],
                         $_POST['date_embauche'],
                         $salaire_fcfa,
@@ -97,7 +95,7 @@ function getEmployes($db) {
         LEFT JOIN animaux a ON e.id = a.employe_id
         LEFT JOIN activites act ON e.id = act.employe_id
         GROUP BY e.id
-        ORDER BY e.nom, e.prenom
+        ORDER BY e.nom_complet
     ");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -227,7 +225,7 @@ $message = $_GET['message'] ?? '';
                             <?php foreach ($employes as $employe): ?>
                                 <tr>
                                     <td>
-                                        <strong><?= htmlspecialchars($employe['nom'] . ' ' . $employe['prenom']) ?></strong>
+                                        <strong><?= htmlspecialchars($employe['nom_complet']) ?></strong>
                                     </td>
                                     <td><?= htmlspecialchars($employe['poste']) ?></td>
                                     <td><?= date('d/m/Y', strtotime($employe['date_embauche'])) ?></td>
@@ -255,7 +253,7 @@ $message = $_GET['message'] ?? '';
                                         <button class="btn btn-sm btn-outline-primary" onclick='editEmploye(<?= json_encode($employeForJs, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_AMP|JSON_HEX_QUOT) ?>)'>
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEmploye(<?= $employe['id'] ?>, '<?= htmlspecialchars($employe['nom'] . ' ' . $employe['prenom']) ?>')">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEmploye(<?= $employe['id'] ?>, '<?= htmlspecialchars($employe['nom_complet']) ?>')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -279,19 +277,9 @@ $message = $_GET['message'] ?? '';
                 <form method="POST">
                     <input type="hidden" name="action" value="add">
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Nom *</label>
-                                    <input type="text" class="form-control" name="nom" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Prénom *</label>
-                                    <input type="text" class="form-control" name="prenom" required>
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nom complet *</label>
+                            <input type="text" class="form-control" name="nom_complet" required>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
@@ -365,19 +353,9 @@ $message = $_GET['message'] ?? '';
                     <input type="hidden" name="action" value="edit">
                     <input type="hidden" name="id" id="edit_id">
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Nom *</label>
-                                    <input type="text" class="form-control" name="nom" id="edit_nom" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Prénom *</label>
-                                    <input type="text" class="form-control" name="prenom" id="edit_prenom" required>
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nom complet *</label>
+                            <input type="text" class="form-control" name="nom_complet" id="edit_nom_complet" required>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
@@ -490,8 +468,7 @@ $message = $_GET['message'] ?? '';
         }
         function editEmploye(employe) {
             document.getElementById('edit_id').value = employe.id;
-            document.getElementById('edit_nom').value = employe.nom;
-            document.getElementById('edit_prenom').value = employe.prenom;
+                    document.getElementById('edit_nom_complet').value = employe.nom_complet;
             document.getElementById('edit_poste').value = employe.poste;
             document.getElementById('edit_date_embauche').value = employe.date_embauche;
             // Pré-remplir le salaire dans la devise actuelle

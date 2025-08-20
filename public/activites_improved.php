@@ -84,7 +84,7 @@ function getActivites($db) {
     
     $stmt = $db->query("
         SELECT a.*, 
-               e.nom as employe_nom, e.prenom as employe_prenom,
+               e.nom_complet as employe_nom_complet,
                an.nom as animal_nom, an.espece as animal_espece
         FROM activites a
         LEFT JOIN employes e ON a.employe_id = e.id
@@ -98,7 +98,7 @@ function getActivites($db) {
 function getEmployes($db) {
     if (!$db) return [];
     
-    $stmt = $db->query("SELECT id, nom, prenom FROM employes WHERE statut = 'actif' ORDER BY nom");
+    $stmt = $db->query("SELECT id, nom_complet FROM employes WHERE statut = 'actif' ORDER BY nom_complet");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -329,7 +329,7 @@ $message = $_GET['message'] ?? '';
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?= $activite['employe_nom'] ? htmlspecialchars($activite['employe_nom'] . ' ' . $activite['employe_prenom']) : '-' ?>
+                                        <?= $activite['employe_nom_complet'] ? htmlspecialchars($activite['employe_nom_complet']) : '-' ?>
                                     </td>
                                     <td>
                                         <?= $activite['animal_nom'] ? htmlspecialchars($activite['animal_nom'] . ' (' . $activite['animal_espece'] . ')') : '-' ?>
@@ -420,7 +420,7 @@ $message = $_GET['message'] ?? '';
                                         <option value="">Aucun</option>
                                         <?php foreach ($employes as $employe): ?>
                                             <option value="<?= $employe['id'] ?>">
-                                                <?= htmlspecialchars($employe['nom'] . ' ' . $employe['prenom']) ?>
+                                                <?= htmlspecialchars($employe['nom_complet']) ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -526,7 +526,7 @@ $message = $_GET['message'] ?? '';
                                         <option value="">Aucun</option>
                                         <?php foreach ($employes as $employe): ?>
                                             <option value="<?= $employe['id'] ?>">
-                                                <?= htmlspecialchars($employe['nom'] . ' ' . $employe['prenom']) ?>
+                                                <?= htmlspecialchars($employe['nom_complet']) ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
