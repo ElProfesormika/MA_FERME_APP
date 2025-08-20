@@ -24,16 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if ($utilisateur && password_verify($mot_de_passe, $utilisateur['mot_de_passe'])) {
                     // Connexion réussie
-                    session_start();
+                    // Session déjà démarrée dans config_sqlite.php
                     $_SESSION['user_id'] = $utilisateur['id'];
-                    $_SESSION['user_nom'] = $utilisateur['nom'];
-                    $_SESSION['user_prenom'] = $utilisateur['prenom'];
+                    $_SESSION['user_nom_complet'] = $utilisateur['nom_complet'];
                     $_SESSION['user_email'] = $utilisateur['email'];
                     $_SESSION['user_role'] = $utilisateur['role'];
-                    
-                    // Mettre à jour la dernière connexion
-                    $stmt = $db->prepare("UPDATE utilisateurs SET derniere_connexion = NOW() WHERE id = ?");
-                    $stmt->execute([$utilisateur['id']]);
                     
                     // Redirection selon le rôle
                     header("Location: index_final.php");

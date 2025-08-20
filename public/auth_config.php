@@ -179,12 +179,12 @@ function createDefaultAdmin() {
 
         // Créer l'admin par défaut
         $stmt = $db->prepare("
-            INSERT INTO utilisateurs (nom, prenom, email, mot_de_passe, role, statut, date_creation)
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO utilisateurs (nom_complet, email, mot_de_passe, role, statut, date_creation)
+            VALUES (?, ?, ?, ?, ?, NOW())
         ");
 
         $mot_de_passe_hash = password_hash('admin123', PASSWORD_DEFAULT);
-        $stmt->execute(['Admin', 'Système', 'admin@ferme.com', $mot_de_passe_hash, 'admin', 'actif']);
+        $stmt->execute(['Administrateur Système', 'admin@ferme.com', $mot_de_passe_hash, 'admin', 'actif']);
 
         return true;
     } catch (Exception $e) {

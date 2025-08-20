@@ -9,15 +9,14 @@ $success = '';
 
 // Traitement de l'inscription
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nom = trim($_POST['nom'] ?? '');
-    $prenom = trim($_POST['prenom'] ?? '');
+    $nom_complet = trim($_POST['nom_complet'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $mot_de_passe = $_POST['mot_de_passe'] ?? '';
     $confirmation_mot_de_passe = $_POST['confirmation_mot_de_passe'] ?? '';
     $telephone = trim($_POST['telephone'] ?? '');
     
     // Validation des données
-    if (empty($nom) || empty($prenom) || empty($email) || empty($mot_de_passe)) {
+    if (empty($nom_complet) || empty($email) || empty($mot_de_passe)) {
         $error = 'Veuillez remplir tous les champs obligatoires.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Veuillez saisir une adresse email valide.';
@@ -37,25 +36,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     // Créer le compte utilisateur
                     $stmt = $db->prepare("
-                        INSERT INTO utilisateurs (nom, prenom, email, mot_de_passe, telephone, role, statut, date_creation) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                        INSERT INTO utilisateurs (nom_complet, email, mot_de_passe, telephone, role, statut, date_creation) 
+                        VALUES (?, ?, ?, ?, ?, ?, NOW())
                     ");
                     
                     $mot_de_passe_hash = password_hash($mot_de_passe, PASSWORD_DEFAULT);
-                                         $stmt->execute([
-                         $nom,
-                         $prenom,
-                         $email,
-                         $mot_de_passe_hash,
-                         $telephone,
-                         'observateur', // Rôle par défaut (plus sécurisé)
-                         'actif'
-                     ]);
+                    $stmt->execute([
+                        $nom_complet,
+                        $email,
+                        $mot_de_passe_hash,
+                        $telephone,
+                        'observateur', // Rôle par défaut (plus sécurisé)
+                        'actif'
+                    ]);
                     
                     $success = 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.';
                     
                     // Vider les champs après succès
-                    $nom = $prenom = $email = $telephone = '';
+                    $nom_complet = $email = $telephone = '';
                 }
             } catch (Exception $e) {
                 $error = 'Erreur lors de la création du compte.';
@@ -170,32 +168,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST" action="">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="nom" class="form-label">Nom *</label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-user"></i>
-                            </span>
-                            <input type="text" class="form-control" id="nom" name="nom" 
-                                   value="<?= htmlspecialchars($nom ?? '') ?>" 
-                                   placeholder="Votre nom" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="prenom" class="form-label">Prénom *</label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-user"></i>
-                            </span>
-                            <input type="text" class="form-control" id="prenom" name="prenom" 
-                                   value="<?= htmlspecialchars($prenom ?? '') ?>" 
-                                   placeholder="Votre prénom" required>
-                        </div>
-                    </div>
+            <div class="mb-3">
+                <label for="nom_complet" class="form-label">Nom complet *</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <input type="text" class="form-control" id="nom_complet" name="nom_complet" 
+                           value="<?= htmlspecialchars($nom_complet ?? '') ?>" 
+                           placeholder="Votre nom complet" required>
                 </div>
             </div>
 
