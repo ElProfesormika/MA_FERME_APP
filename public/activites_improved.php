@@ -121,7 +121,7 @@ function getActiviteStats($db) {
     $stats['total'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // Activités aujourd'hui
-    $stmt = $db->query("SELECT COUNT(*) as total FROM activites WHERE date = CURDATE()");
+    $stmt = $db->query("SELECT COUNT(*) as total FROM activites WHERE date = date('now')");
     $stats['aujourdhui'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // Activités planifiées

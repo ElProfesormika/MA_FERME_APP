@@ -105,13 +105,12 @@ function detecterAlertesAutomatiques($db) {
         
         foreach ($ruptures as $rupture) {
             $stmt = $db->prepare("
-                INSERT INTO alertes (titre, description, type, priorite, statut, reference_id, date_creation, created_at, updated_at)
-                VALUES (?, ?, 'stock_rupture', 'haute', 'active', ?, NOW(), NOW(), NOW())
+                INSERT INTO alertes (titre, message, type, priorite, statut, date_creation)
+                VALUES (?, ?, 'stock_rupture', 'haute', 'active', datetime('now'))
             ");
             $stmt->execute([
                 "Rupture de stock : " . $rupture['produit'],
-                "Le produit {$rupture['produit']} est en rupture (quantité: {$rupture['quantite']})",
-                $rupture['id']
+                "Le produit {$rupture['produit']} est en rupture (quantité: {$rupture['quantite']})"
             ]);
         }
         
@@ -128,14 +127,12 @@ function detecterAlertesAutomatiques($db) {
         foreach ($peremptions as $peremption) {
             $jours = ceil((strtotime($peremption['date_peremption']) - time()) / (24 * 3600));
             $stmt = $db->prepare("
-                INSERT INTO alertes (titre, description, type, priorite, statut, reference_id, date_creation, date_echeance, created_at, updated_at)
-                VALUES (?, ?, 'stock_peremption', 'moyenne', 'active', ?, NOW(), ?, NOW(), NOW())
+                INSERT INTO alertes (titre, message, type, priorite, statut, date_creation)
+                VALUES (?, ?, 'stock_peremption', 'moyenne', 'active', datetime('now'))
             ");
             $stmt->execute([
                 "Péremption proche : " . $peremption['produit'],
-                "Le produit {$peremption['produit']} expire dans {$jours} jour(s)",
-                $peremption['id'],
-                $peremption['date_peremption']
+                "Le produit {$peremption['produit']} expire dans {$jours} jour(s)"
             ]);
         }
         
@@ -150,13 +147,12 @@ function detecterAlertesAutomatiques($db) {
         
         foreach ($retards as $retard) {
             $stmt = $db->prepare("
-                INSERT INTO alertes (titre, description, type, priorite, statut, reference_id, date_creation, created_at, updated_at)
-                VALUES (?, ?, 'activite_retard', 'haute', 'active', ?, NOW(), NOW(), NOW())
+                INSERT INTO alertes (titre, message, type, priorite, statut, date_creation)
+                VALUES (?, ?, 'activite_retard', 'haute', 'active', datetime('now'))
             ");
             $stmt->execute([
                 "Activité en retard : " . $retard['titre'],
-                "L'activité {$retard['titre']} était prévue le " . date('d/m/Y', strtotime($retard['date'])),
-                $retard['id']
+                "L'activité {$retard['titre']} était prévue le " . date('d/m/Y', strtotime($retard['date']))
             ]);
         }
     } catch (PDOException $e) {

@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Créer le compte utilisateur
                     $stmt = $db->prepare("
                         INSERT INTO utilisateurs (nom_complet, email, mot_de_passe, telephone, role, statut, date_creation) 
-                        VALUES (?, ?, ?, ?, ?, ?, NOW())
+                        VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
                     ");
                     
                     $mot_de_passe_hash = password_hash($mot_de_passe, PASSWORD_DEFAULT);

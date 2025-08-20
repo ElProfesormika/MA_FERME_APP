@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $salaire_saisi = isset($_POST['salaire']) ? (float)$_POST['salaire'] : 0.0;
                     $salaire_fcfa = ($devise_actuelle === 'FCFA') ? $salaire_saisi : convertirDevise($salaire_saisi, $devise_actuelle, 'FCFA');
                     $stmt = $db->prepare("
-                        INSERT INTO employes (nom_complet, poste, date_embauche, salaire, telephone, email, adresse, statut, date_creation)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, 'actif', datetime('now'))
+                        INSERT INTO employes (nom_complet, poste, date_embauche, salaire, telephone, email, statut, date_creation)
+                        VALUES (?, ?, ?, ?, ?, ?, 'actif', datetime('now'))
                     ");
                     $success = $stmt->execute([
                         $_POST['nom_complet'],
@@ -35,8 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_POST['date_embauche'],
                         $salaire_fcfa,
                         $_POST['telephone'],
-                        $_POST['email'],
-                        $_POST['adresse']
+                        $_POST['email']
                     ]);
                     $message = $success ? "Employé ajouté avec succès !" : "Erreur lors de l'ajout";
                 }
@@ -49,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $salaire_fcfa = ($devise_actuelle === 'FCFA') ? $salaire_saisi : convertirDevise($salaire_saisi, $devise_actuelle, 'FCFA');
                     $stmt = $db->prepare("
                         UPDATE employes 
-                        SET nom_complet = ?, poste = ?, date_embauche = ?, salaire = ?, telephone = ?, email = ?, adresse = ?, statut = ?
+                        SET nom_complet = ?, poste = ?, date_embauche = ?, salaire = ?, telephone = ?, email = ?, statut = ?
                         WHERE id = ?
                     ");
                     $success = $stmt->execute([
@@ -59,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $salaire_fcfa,
                         $_POST['telephone'],
                         $_POST['email'],
-                        $_POST['adresse'],
                         $_POST['statut'],
                         $_POST['id']
                     ]);
@@ -324,12 +322,7 @@ $message = $_GET['message'] ?? '';
                                     <input type="email" class="form-control" name="email">
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Adresse</label>
-                                    <textarea class="form-control" name="adresse" rows="2"></textarea>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -411,10 +404,7 @@ $message = $_GET['message'] ?? '';
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Adresse</label>
-                            <textarea class="form-control" name="adresse" id="edit_adresse" rows="2"></textarea>
-                        </div>
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -479,7 +469,7 @@ $message = $_GET['message'] ?? '';
             }
             document.getElementById('edit_telephone').value = employe.telephone || '';
             document.getElementById('edit_email').value = employe.email || '';
-            document.getElementById('edit_adresse').value = employe.adresse || '';
+
             document.getElementById('edit_statut').value = employe.statut;
             
             new bootstrap.Modal(document.getElementById('editEmployeModal')).show();

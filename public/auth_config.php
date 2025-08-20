@@ -180,7 +180,7 @@ function createDefaultAdmin() {
         // Créer l'admin par défaut
         $stmt = $db->prepare("
             INSERT INTO utilisateurs (nom_complet, email, mot_de_passe, role, statut, date_creation)
-            VALUES (?, ?, ?, ?, ?, NOW())
+            VALUES (?, ?, ?, ?, ?, datetime('now'))
         ");
 
         $mot_de_passe_hash = password_hash('admin123', PASSWORD_DEFAULT);
