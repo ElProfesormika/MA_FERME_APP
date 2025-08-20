@@ -26,6 +26,22 @@ echo "<li><strong>User:</strong> $username</li>";
 echo "<li><strong>Password:</strong> " . (strlen($password) > 0 ? '***' : 'Non défini') . "</li>";
 echo "</ul>";
 
+// Test de connexion avec les valeurs exactes si les variables ne sont pas définies
+if (empty($password)) {
+    echo "<h3>⚠️ Variables d'environnement non trouvées, test avec les valeurs directes :</h3>";
+    $host = 'ma_ferme_app.railway.internal';
+    $database = 'railway';
+    $username = 'root';
+    $password = 'jVfXUYOQJMKRdZwVFgqouoTqubfanCfZ';
+    
+    echo "<ul>";
+    echo "<li><strong>Host:</strong> $host</li>";
+    echo "<li><strong>Database:</strong> $database</li>";
+    echo "<li><strong>User:</strong> $username</li>";
+    echo "<li><strong>Password:</strong> ***</li>";
+    echo "</ul>";
+}
+
 try {
     // Connexion à la base de données
     $pdo = new PDO("mysql:host=$host;dbname=$database;charset=utf8mb4", $username, $password);
@@ -198,10 +214,9 @@ try {
     echo "<p><strong>Solution :</strong> Configurez les variables d'environnement dans Railway</p>";
     echo "<p><strong>Variables nécessaires :</strong></p>";
     echo "<ul>";
-    echo "<li>MYSQLHOST = \${{RAILWAY_PRIVATE_DOMAIN}}</li>";
-    echo "<li>MYSQLDATABASE = railway</li>";
-    echo "<li>MYSQLUSER = root</li>";
-    echo "<li>MYSQLPASSWORD = jVfXUYOQJMKRdZwVFgqouoTqubfanCfZ</li>";
+    echo "<li>MYSQL_DATABASE = railway</li>";
+    echo "<li>MYSQL_USERNAME = root</li>";
+    echo "<li>MYSQL_ROOT_PASSWORD = jVfXUYOQJMKRdZwVFgqouoTqubfanCfZ</li>";
     echo "</ul>";
 }
 ?>
