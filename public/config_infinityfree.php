@@ -67,12 +67,12 @@ $DEVISE_CONFIG = [
 // Fonction pour obtenir la configuration de la base de données
 function getDBConfig() {
     // Priorité à Railway si les variables d'environnement sont présentes
-    if (isset($_ENV['MYSQL_HOST'])) {
+    if (isset($_ENV['MYSQLHOST']) || isset($_ENV['MYSQL_HOST'])) {
         return [
-            'host' => $_ENV['MYSQL_HOST'],
-            'database' => $_ENV['MYSQL_DATABASE'] ?? 'ferme_db',
-            'username' => $_ENV['MYSQL_USERNAME'],
-            'password' => $_ENV['MYSQL_PASSWORD'],
+            'host' => $_ENV['MYSQLHOST'] ?? $_ENV['MYSQL_HOST'] ?? 'localhost',
+            'database' => $_ENV['MYSQL_DATABASE'] ?? $_ENV['MYSQLDATABASE'] ?? 'railway',
+            'username' => $_ENV['MYSQL_USERNAME'] ?? $_ENV['MYSQLUSER'] ?? 'root',
+            'password' => $_ENV['MYSQL_ROOT_PASSWORD'] ?? $_ENV['MYSQLPASSWORD'] ?? '',
             'charset' => 'utf8mb4'
         ];
     }
