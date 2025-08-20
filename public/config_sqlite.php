@@ -15,26 +15,26 @@ function app_footer_columns() {
     return [
         [
             'title' => 'À propos',
-            'links' => [
-                ['text' => 'Notre histoire', 'url' => '#'],
-                ['text' => 'Notre équipe', 'url' => '#'],
-                ['text' => 'Nos valeurs', 'url' => '#']
+            'lines' => [
+                'Notre histoire',
+                'Notre équipe',
+                'Nos valeurs'
             ]
         ],
         [
             'title' => 'Services',
-            'links' => [
-                ['text' => 'Gestion des stocks', 'url' => '#'],
-                ['text' => 'Suivi des animaux', 'url' => '#'],
-                ['text' => 'Rapports', 'url' => '#']
+            'lines' => [
+                'Gestion des stocks',
+                'Suivi des animaux',
+                'Rapports'
             ]
         ],
         [
             'title' => 'Support',
-            'links' => [
-                ['text' => 'FAQ', 'url' => '#'],
-                ['text' => 'Contact', 'url' => '#'],
-                ['text' => 'Aide', 'url' => '#']
+            'lines' => [
+                'FAQ',
+                'Contact',
+                'Aide'
             ]
         ]
     ];

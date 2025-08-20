@@ -178,7 +178,7 @@ $devise_actuelle = getDeviseActuelle();
                  
                  <!-- Message de bienvenue personnalisé selon le rôle -->
                  <div class="alert alert-<?= getRoleColor($_SESSION['user_role']) ?> d-inline-block mb-3">
-                     <strong>Bienvenue <?= htmlspecialchars($_SESSION['user_prenom']) ?> !</strong>
+                     <strong>Bienvenue <?= htmlspecialchars($_SESSION['user_nom_complet'] ?? 'Utilisateur') ?> !</strong>
                      <br>
                      <small>Rôle : <?= getRoleName($_SESSION['user_role']) ?> - <?= getRoleDescription($_SESSION['user_role']) ?></small>
                  </div>
@@ -191,7 +191,7 @@ $devise_actuelle = getDeviseActuelle();
                 <!-- Informations utilisateur -->
                 <div class="d-flex align-items-center me-3">
                     <div class="text-end me-2">
-                        <div class="fw-bold"><?= htmlspecialchars($_SESSION['user_prenom'] . ' ' . $_SESSION['user_nom']) ?></div>
+                        <div class="fw-bold"><?= htmlspecialchars($_SESSION['user_nom_complet'] ?? 'Utilisateur') ?></div>
                         <div class="small text-muted">
                             <span class="badge bg-<?= getRoleColor($_SESSION['user_role']) ?>">
                                 <?= getRoleName($_SESSION['user_role']) ?>
