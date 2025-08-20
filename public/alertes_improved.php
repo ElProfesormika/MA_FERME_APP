@@ -83,23 +83,11 @@ function detecterAlertesAutomatiques($db) {
     if (!$db) return;
     
     try {
-        // Vérifier si les colonnes nécessaires existent
-        $stmt = $db->query("SHOW COLUMNS FROM alertes LIKE 'reference_id'");
-        $referenceIdExists = $stmt->rowCount() > 0;
-        
-        $stmt = $db->query("SHOW COLUMNS FROM alertes LIKE 'titre'");
-        $titreExists = $stmt->rowCount() > 0;
-        
-        if (!$referenceIdExists || !$titreExists) {
-            // Si les colonnes n'existent pas, on ne peut pas créer d'alertes automatiques
-            return;
-        }
         
         // Alertes de stock en rupture
         $stmt = $db->query("
             SELECT id, produit, quantite FROM stocks 
             WHERE quantite <= 10 
-            AND id NOT IN (SELECT reference_id FROM alertes WHERE type = 'stock_rupture' AND statut = 'active')
         ");
         $ruptures = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -120,7 +108,6 @@ function detecterAlertesAutomatiques($db) {
             WHERE date_peremption IS NOT NULL 
                     AND date_peremption <= date('now', '+30 days')
         AND date_peremption > date('now')
-            AND id NOT IN (SELECT reference_id FROM alertes WHERE type = 'stock_peremption' AND statut = 'active')
         ");
         $peremptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -141,7 +128,6 @@ function detecterAlertesAutomatiques($db) {
             SELECT id, titre, date FROM activites 
             WHERE date < date('now') 
             AND statut = 'planifie'
-            AND id NOT IN (SELECT reference_id FROM alertes WHERE type = 'activite_retard' AND statut = 'active')
         ");
         $retards = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -163,17 +149,10 @@ function detecterAlertesAutomatiques($db) {
 
 // Exécuter la détection automatique
 if ($db) {
-    // Vérifier si les colonnes nécessaires existent avant d'exécuter
     try {
-        $stmt = $db->query("SHOW COLUMNS FROM alertes LIKE 'reference_id'");
-        if ($stmt->rowCount() > 0) {
-            detecterAlertesAutomatiques($db);
-        } else {
-            // Si les colonnes n'existent pas, on ne fait rien pour éviter l'erreur
-            error_log("Colonnes manquantes dans la table alertes - détection automatique désactivée");
-        }
+        detecterAlertesAutomatiques($db);
     } catch (PDOException $e) {
-        error_log("Erreur lors de la vérification des colonnes alertes: " . $e->getMessage());
+        error_log("Erreur lors de la détection automatique des alertes: " . $e->getMessage());
     }
 }
 
@@ -182,42 +161,18 @@ function getAlertes($db) {
     if (!$db) return [];
     
     try {
-        // Vérifier si les colonnes nécessaires existent
-        $stmt = $db->query("SHOW COLUMNS FROM alertes LIKE 'reference_id'");
-        $referenceIdExists = $stmt->rowCount() > 0;
-        
-        $stmt = $db->query("SHOW COLUMNS FROM alertes LIKE 'titre'");
-        $titreExists = $stmt->rowCount() > 0;
-        
-        if ($referenceIdExists && $titreExists) {
-            // Requête complète avec toutes les colonnes
-            $stmt = $db->query("
-                SELECT a.*, 
-                       CASE 
-                           WHEN a.type = 'stock_rupture' THEN s.produit
-                           WHEN a.type = 'stock_peremption' THEN s.produit
-                           WHEN a.type = 'activite_retard' THEN act.titre
-                           ELSE NULL
-                       END as reference_nom
-                FROM alertes a
-                LEFT JOIN stocks s ON a.reference_id = s.id AND a.type IN ('stock_rupture', 'stock_peremption')
-                LEFT JOIN activites act ON a.reference_id = act.id AND a.type = 'activite_retard'
-                ORDER BY 
-                    CASE a.priorite 
-                        WHEN 'critique' THEN 1 
-                        WHEN 'haute' THEN 2 
-                        WHEN 'moyenne' THEN 3 
-                        WHEN 'basse' THEN 4 
-                    END,
-                    a.date_creation DESC
-            ");
-        } else {
-            // Requête simplifiée sans les nouvelles colonnes
-            $stmt = $db->query("
-                SELECT * FROM alertes 
-                ORDER BY created_at DESC
-            ");
-        }
+        // Requête simplifiée pour SQLite
+        $stmt = $db->query("
+            SELECT * FROM alertes 
+            ORDER BY 
+                CASE priorite 
+                    WHEN 'critique' THEN 1 
+                    WHEN 'haute' THEN 2 
+                    WHEN 'moyenne' THEN 3 
+                    WHEN 'basse' THEN 4 
+                END,
+                date_creation DESC
+        ");
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
@@ -255,6 +210,19 @@ $alertes = getAlertes($db);
 $stats = getAlerteStats($db);
 $dbStatus = $db ? '✅ Connecté' : '❌ Non connecté';
 $devise_actuelle = getDeviseActuelle();
+
+// Debug: Afficher les alertes pour diagnostic
+if (empty($alertes) && $stats['total'] > 0) {
+    error_log("DEBUG: Stats montrent " . $stats['total'] . " alertes mais getAlertes() retourne vide");
+    // Essayer une requête directe pour debug
+    try {
+        $debug_stmt = $db->query("SELECT * FROM alertes LIMIT 5");
+        $debug_alertes = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("DEBUG: Requête directe retourne " . count($debug_alertes) . " alertes");
+    } catch (Exception $e) {
+        error_log("DEBUG: Erreur requête directe: " . $e->getMessage());
+    }
+}
 
 // Récupération des messages
 $status = $_GET['status'] ?? '';
@@ -462,7 +430,7 @@ $message = $_GET['message'] ?? '';
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?= $alerte['reference_nom'] ? htmlspecialchars($alerte['reference_nom']) : '-' ?>
+                                        <span class="text-muted">-</span>
                                     </td>
                                     <td>
                                         <?php if ($alerte['statut'] === 'active'): ?>
