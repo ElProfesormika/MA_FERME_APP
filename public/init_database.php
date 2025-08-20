@@ -2,11 +2,29 @@
 // Script temporaire pour initialiser la base de données sur Railway
 // À supprimer après utilisation
 
-// Configuration Railway
-$host = $_ENV['MYSQLHOST'] ?? 'localhost';
-$database = $_ENV['MYSQLDATABASE'] ?? 'railway';
-$username = $_ENV['MYSQLUSER'] ?? 'root';
-$password = $_ENV['MYSQLPASSWORD'] ?? '';
+// Configuration Railway - Utilisation des variables d'environnement Railway
+$host = $_ENV['RAILWAY_PRIVATE_DOMAIN'] ?? $_ENV['MYSQLHOST'] ?? 'localhost';
+$database = $_ENV['MYSQL_DATABASE'] ?? $_ENV['MYSQLDATABASE'] ?? 'railway';
+$username = $_ENV['MYSQL_USERNAME'] ?? $_ENV['MYSQLUSER'] ?? 'root';
+$password = $_ENV['MYSQL_ROOT_PASSWORD'] ?? $_ENV['MYSQLPASSWORD'] ?? '';
+
+// Debug: Afficher les variables disponibles
+echo "<h2>🔍 Debug - Variables d'environnement disponibles :</h2>";
+echo "<ul>";
+foreach ($_ENV as $key => $value) {
+    if (strpos($key, 'MYSQL') !== false || strpos($key, 'RAILWAY') !== false) {
+        echo "<li><strong>$key:</strong> " . (strpos($key, 'PASSWORD') !== false ? '***' : $value) . "</li>";
+    }
+}
+echo "</ul>";
+
+echo "<h2>🔧 Configuration utilisée :</h2>";
+echo "<ul>";
+echo "<li><strong>Host:</strong> $host</li>";
+echo "<li><strong>Database:</strong> $database</li>";
+echo "<li><strong>User:</strong> $username</li>";
+echo "<li><strong>Password:</strong> " . (strlen($password) > 0 ? '***' : 'Non défini') . "</li>";
+echo "</ul>";
 
 try {
     // Connexion à la base de données
@@ -14,9 +32,6 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     echo "<h2>✅ Connexion réussie à la base de données Railway</h2>";
-    echo "<p><strong>Host:</strong> $host</p>";
-    echo "<p><strong>Database:</strong> $database</p>";
-    echo "<p><strong>User:</strong> $username</p>";
     
     // Script SQL d'initialisation
     $sql = "
@@ -180,12 +195,13 @@ try {
 } catch (PDOException $e) {
     echo "<h2>❌ Erreur de connexion</h2>";
     echo "<p><strong>Erreur :</strong> " . $e->getMessage() . "</p>";
-    echo "<p><strong>Variables d'environnement :</strong></p>";
+    echo "<p><strong>Solution :</strong> Configurez les variables d'environnement dans Railway</p>";
+    echo "<p><strong>Variables nécessaires :</strong></p>";
     echo "<ul>";
-    echo "<li>MYSQLHOST: " . ($_ENV['MYSQLHOST'] ?? 'Non défini') . "</li>";
-    echo "<li>MYSQLDATABASE: " . ($_ENV['MYSQLDATABASE'] ?? 'Non défini') . "</li>";
-    echo "<li>MYSQLUSER: " . ($_ENV['MYSQLUSER'] ?? 'Non défini') . "</li>";
-    echo "<li>MYSQLPASSWORD: " . (isset($_ENV['MYSQLPASSWORD']) ? 'Défini' : 'Non défini') . "</li>";
+    echo "<li>MYSQLHOST = \${{RAILWAY_PRIVATE_DOMAIN}}</li>";
+    echo "<li>MYSQLDATABASE = railway</li>";
+    echo "<li>MYSQLUSER = root</li>";
+    echo "<li>MYSQLPASSWORD = jVfXUYOQJMKRdZwVFgqouoTqubfanCfZ</li>";
     echo "</ul>";
 }
 ?>
