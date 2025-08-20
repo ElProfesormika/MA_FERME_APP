@@ -167,12 +167,12 @@ try {
     ");
     echo "<p>✅ Employés de test créés</p>";
     
-    // Activités de test
+    // Activités de test (avec employe_id au lieu de responsable)
     $db->exec("
-        INSERT OR IGNORE INTO activites (titre, description, date, heure_debut, heure_fin, type, statut, responsable) VALUES
-        ('Nourrissage matinal', 'Distribution du foin et des grains', date('now'), '06:00', '07:00', 'Soins', 'planifie', 'Marie Martin'),
-        ('Vaccination', 'Vaccination des bovins', date('now', '+1 day'), '09:00', '11:00', 'Santé', 'planifie', 'Jean Dupont'),
-        ('Maintenance', 'Réparation des clôtures', date('now', '+2 days'), '08:00', '12:00', 'Maintenance', 'planifie', 'Pierre Durand')
+        INSERT OR IGNORE INTO activites (titre, description, date, heure_debut, heure_fin, type, statut, employe_id) VALUES
+        ('Nourrissage matinal', 'Distribution du foin et des grains', date('now'), '06:00', '07:00', 'soins', 'planifie', 2),
+        ('Vaccination', 'Vaccination des bovins', date('now', '+1 day'), '09:00', '11:00', 'sante', 'planifie', 1),
+        ('Maintenance', 'Réparation des clôtures', date('now', '+2 days'), '08:00', '12:00', 'maintenance', 'planifie', 3)
     ");
     echo "<p>✅ Activités de test créées</p>";
     
