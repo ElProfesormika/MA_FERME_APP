@@ -1,6 +1,6 @@
 <?php
-// Inclure la configuration des devises
-require_once 'config_devises.php';
+// Inclure la configuration sécurisée
+require_once 'config_infinityfree.php';
 
 // Traitement du changement de devise
 if (isset($_POST['changer_devise'])) {

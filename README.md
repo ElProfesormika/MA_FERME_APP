@@ -1,298 +1,182 @@
-# 🐄 Application de Gestion de Ferme d'Élevage
+# Ferme d'Élevage - Système de Gestion
 
-Une application Laravel robuste et moderne pour la gestion complète d'une ferme d'élevage, incluant la gestion des animaux, des stocks, des employés, des activités et des alertes.
+## Description
+Système de gestion complet pour exploitation agricole et d'élevage. Application web moderne avec interface responsive et fonctionnalités avancées.
 
-## ✨ Fonctionnalités principales
+## Fonctionnalités
 
-### 📊 Tableau de bord interactif
-- **Statistiques en temps réel** : Nombre d'animaux, employés, alertes critiques
-- **Graphiques Chart.js** : Activités par mois, répartition des animaux par espèce
-- **Alertes récentes** : Affichage des alertes critiques et importantes
-- **Actions rapides** : Accès direct aux fonctions principales
+### 🐄 Gestion des Animaux
+- Suivi du cheptel (vaches, taureaux, chèvres, poules, etc.)
+- Historique sanitaire et reproductif
+- Gestion des poids et statuts
+- Calcul des valeurs d'achat/vente
 
-### 🐮 Gestion des animaux
-- **CRUD complet** : Création, lecture, modification, suppression
-- **Informations détaillées** : Nom, espèce, race, date de naissance, poids, sexe
-- **Historique de santé** : Suivi médical et traitements
-- **Assignation d'employés** : Responsable de chaque animal
-- **Export CSV** : Export des données pour analyse externe
-- **Recherche et filtres** : Par espèce, statut, sexe, etc.
+### 📦 Gestion des Stocks
+- Inventaire des produits et fournitures
+- Alertes de rupture et péremption
+- Suivi des fournisseurs
+- Calcul des valeurs de stock
 
-### 📦 Gestion des stocks
-- **Suivi des produits** : Quantités, dates d'entrée et de péremption
-- **Alertes automatiques** : Rupture de stock, produits périmés
-- **Catégorisation** : Organisation par type de produit
-- **Fournisseurs** : Suivi des sources d'approvisionnement
+### 👥 Gestion des Employés
+- Fiche du personnel
+- Postes et responsabilités
+- Planning et congés
+- Suivi des salaires
 
-### 👥 Gestion des employés
-- **Profils complets** : Informations personnelles et professionnelles
-- **Postes et responsabilités** : Attribution des rôles
-- **Suivi des activités** : Historique des tâches effectuées
-- **Statuts** : Actif, inactif, congé
+### 📅 Gestion des Activités
+- Planning des tâches quotidiennes
+- Assignation d'employés
+- Suivi des priorités
+- Historique des activités
 
-### 📋 Gestion des activités
-- **Planification** : Création et suivi des tâches
-- **Types d'activités** : Nourrissage, soins, nettoyage, maintenance
-- **Assignation** : Employés et animaux concernés
-- **Statuts** : Planifié, en cours, terminé, annulé
-- **Horaires** : Heures de début et de fin
+### 🔔 Système d'Alertes
+- Surveillance automatique
+- Détection de problèmes
+- Gestion des priorités
+- Notifications en temps réel
 
-### ⚠️ Système d'alertes
-- **Alertes critiques** : Notifications importantes
-- **Types variés** : Santé, stock, maintenance
-- **Statuts** : Nouvelle, en cours, résolue
-- **Notifications email** : Pour les alertes critiques
+### 📊 Rapports et Exports
+- Statistiques détaillées
+- Exports PDF et CSV
+- Tableaux de bord
+- Analyses financières
 
-### 📝 Journal d'activité (Logs)
-- **Traçabilité complète** : Toutes les actions utilisateurs
-- **Filtres avancés** : Par action, modèle, date, utilisateur
-- **Export CSV** : Sauvegarde des logs
-- **Nettoyage automatique** : Suppression des anciens logs
+### 💰 Gestion Financière
+- Suivi des ventes et achats
+- Gestion des dépenses et revenus
+- Convertisseur de devises
+- Rapports financiers
 
-### 📈 Statistiques et rapports
-- **Graphiques interactifs** : Chart.js pour la visualisation
-- **Périodes configurables** : Hebdomadaire, mensuelle
-- **Export PDF** : Rapports détaillés
-- **API REST** : Pour applications mobiles
+### 👨‍💼 Gestion d'Équipe
+- Gestion des utilisateurs
+- Rôles et permissions
+- Sécurité des accès
+- Audit des actions
 
-## 🛠️ Technologies utilisées
+## Installation
 
-- **Backend** : Laravel 10.x
-- **Frontend** : Bootstrap 5, Chart.js
-- **Base de données** : MySQL
-- **Export** : CSV natif, PDF avec DomPDF
-- **Icons** : Font Awesome 6
-- **Charts** : Chart.js
-
-## 📋 Prérequis
-
-- PHP 8.1 ou supérieur
-- Composer
+### Prérequis
+- Serveur web (Apache/Nginx)
+- PHP 7.4 ou supérieur
 - MySQL 5.7 ou supérieur
-- Node.js et NPM (pour les assets)
+- WAMP/XAMPP (pour développement local)
 
-## 🚀 Installation
+### Installation Locale (WAMP)
 
-### 1. Cloner le projet
+1. **Cloner ou télécharger le projet**
 ```bash
-git clone [url-du-repo]
-cd ferme_app
-```
+   # Copier les fichiers dans le dossier www de WAMP
+   C:\wamp64\www\ferme_app\
+   ```
 
-### 2. Installer les dépendances
-```bash
-composer install
-npm install
-```
+2. **Créer la base de données**
+   - Ouvrir phpMyAdmin (http://localhost/phpmyadmin)
+   - Créer une base de données nommée `ferme_db`
+   - Importer le fichier `database_setup_fixed.sql`
 
-### 3. Configuration de l'environnement
-```bash
-cp .env.example .env
-php artisan key:generate
-```
+3. **Configurer la base de données**
+   - Ouvrir `http://localhost/ferme_app/check_database.php`
+   - Vérifier la connexion à la base de données
 
-### 4. Configuration de la base de données
-Modifier le fichier `.env` :
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=ferme_db
-DB_USERNAME=root
-DB_PASSWORD=
-```
+4. **Accéder à l'application**
+   - Ouvrir `http://localhost/ferme_app/`
+   - L'application redirigera automatiquement vers le tableau de bord
 
-### 5. Créer la base de données
-```sql
-CREATE DATABASE ferme_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+### Installation sur InfinityFree
 
-### 6. Exécuter les migrations
-```bash
-php artisan migrate
-```
+1. **Uploader les fichiers**
+   - Télécharger `ferme_infinityfree_ready.zip`
+   - Décompresser dans le dossier `htdocs` d'InfinityFree
 
-### 7. Compiler les assets (optionnel)
-```bash
-npm run dev
-```
+2. **Créer la base de données**
+   - Créer une base de données MySQL sur InfinityFree
+   - Noter les informations de connexion
 
-### 8. Démarrer le serveur
-```bash
-php artisan serve
-```
+3. **Configurer l'application**
+   - Ouvrir `install_infinityfree.php`
+   - Saisir les informations de base de données
+   - Importer `database_setup_fixed.sql` dans phpMyAdmin
 
-## 📁 Structure du projet
+4. **Nettoyer l'installation**
+   - Exécuter `clean_installation.php` (une seule fois)
+   - Accéder à l'application via `index.php`
 
-```
-ferme_app/
-├── app/
-│   ├── Http/Controllers/
-│   │   ├── AnimalController.php
-│   │   ├── DashboardController.php
-│   │   ├── LogController.php
-│   │   └── ...
-│   ├── Models/
-│   │   ├── Animal.php
-│   │   ├── Stock.php
-│   │   ├── Employe.php
-│   │   ├── Activite.php
-│   │   ├── Alerte.php
-│   │   └── Log.php
-│   └── ...
-├── database/
-│   └── migrations/
-│       ├── create_animals_table.php
-│       ├── create_stocks_table.php
-│       ├── create_employes_table.php
-│       ├── create_activites_table.php
-│       ├── create_alertes_table.php
-│       └── create_logs_table.php
-├── resources/
-│   └── views/
-│       ├── layouts/
-│       │   └── app.blade.php
-│       ├── dashboard/
-│       │   └── index.blade.php
-│       ├── animaux/
-│       │   ├── index.blade.php
-│       │   ├── create.blade.php
-│       │   └── ...
-│       └── ...
-└── routes/
-    └── web.php
-```
+## Configuration
 
-## 🔧 Configuration avancée
+### Fichiers de configuration
+- `config_infinityfree.php` : Configuration principale
+- `db_config.php` : Configuration base de données
+- `config_app.php` : Configuration application
+- `config_devises.php` : Configuration devises
 
-### Notifications email
-Pour activer les notifications d'alertes critiques, configurer dans `.env` :
-```env
-MAIL_MAILER=smtp
-MAIL_HOST=your-smtp-host
-MAIL_PORT=587
-MAIL_USERNAME=your-email
-MAIL_PASSWORD=your-password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=noreply@ferme.com
-MAIL_FROM_NAME="Ferme d'Élevage"
-```
+### Variables d'environnement
+- `APP_NAME` : Nom de l'application
+- `APP_SLOGAN` : Slogan de l'application
+- `DEVISE_DEFAUT` : Devise par défaut (FCFA)
 
-### Sauvegarde automatique
-Ajouter dans `app/Console/Kernel.php` :
-```php
-protected function schedule(Schedule $schedule)
-{
-    $schedule->command('backup:run')->daily();
-}
-```
+## Utilisation
 
-## 📱 API REST
+### Interface principale
+- **Tableau de bord** : Vue d'ensemble avec statistiques
+- **Navigation** : Menu principal avec tous les modules
+- **Devise** : Sélecteur de devise en haut à droite
 
-L'application expose une API REST pour les applications mobiles :
+### Modules principaux
+1. **Animaux** : Gestion du cheptel
+2. **Stocks** : Inventaire et fournitures
+3. **Employés** : Gestion du personnel
+4. **Activités** : Planning des tâches
+5. **Alertes** : Notifications système
+6. **Rapports** : Exports et statistiques
+7. **Équipe** : Gestion des utilisateurs
 
-### Endpoints disponibles
-- `GET /api/animaux` - Liste des animaux
-- `GET /api/stocks` - État des stocks
-- `GET /api/alertes` - Alertes critiques
-- `POST /api/alertes` - Créer une alerte
+### Fonctionnalités avancées
+- **PWA** : Installation comme application mobile
+- **Mode hors ligne** : Fonctionnement sans connexion
+- **Responsive** : Interface adaptée mobile/tablette
+- **Multi-devises** : Support FCFA, EUR, USD
 
-### Authentification
-L'API utilise Laravel Sanctum pour l'authentification.
+## Sécurité
 
-## 🔒 Sécurité
+### Protection des fichiers
+- `.htaccess` : Protection des fichiers sensibles
+- `db_config.php.backup` : Fichier de configuration protégé
+- Validation des entrées utilisateur
+- Protection CSRF
 
-- **Authentification** : Laravel Breeze
-- **Validation** : Règles de validation strictes
-- **CSRF Protection** : Protection contre les attaques CSRF
-- **Journalisation** : Traçabilité complète des actions
-- **Permissions** : Système de rôles et permissions
+### Gestion des utilisateurs
+- Rôles : admin, manager, employé, visiteur
+- Permissions granulaires
+- Sessions sécurisées
+- Audit des connexions
 
-## 📊 Fonctionnalités avancées
+## Maintenance
 
-### Statistiques d'activité
-- **Vue hebdomadaire** : Activités par semaine
-- **Vue mensuelle** : Activités par mois
-- **Graphiques interactifs** : Chart.js
-- **Export PDF** : Rapports détaillés
+### Sauvegarde
+- Exporter régulièrement la base de données
+- Sauvegarder les fichiers de configuration
+- Vérifier les logs d'erreur
 
-### Module de journalisation
-- **Logs automatiques** : Toutes les actions CRUD
-- **Filtres avancés** : Par action, modèle, utilisateur, date
-- **Export CSV** : Sauvegarde des logs
-- **Nettoyage automatique** : Suppression des anciens logs
+### Mise à jour
+- Vérifier les nouvelles versions
+- Tester en environnement de développement
+- Sauvegarder avant mise à jour
 
-### Interface d'import/export
-- **Export CSV** : Données des animaux
-- **Import CSV** : Import en lot
-- **Validation** : Vérification des données importées
-- **Gestion d'erreurs** : Rapport d'erreurs d'import
+## Support
 
-## 🎨 Interface utilisateur
+### Documentation
+- Guide d'installation détaillé
+- Manuel utilisateur
+- FAQ et dépannage
 
-### Design moderne
-- **Bootstrap 5** : Framework CSS moderne
-- **Responsive** : Compatible mobile et tablette
-- **Thème personnalisé** : Couleurs et styles adaptés
-- **Icons Font Awesome** : Interface intuitive
+### Contact
+- Support technique : support@ferme.com
+- Développeur : Ismaila YABRE
+- Version : 2.0.0
 
-### Navigation
-- **Sidebar** : Navigation principale
-- **Breadcrumbs** : Navigation contextuelle
-- **Actions rapides** : Accès direct aux fonctions
-- **Recherche** : Filtres et recherche avancée
+## Licence
 
-## 🚀 Déploiement
+Ce logiciel est protégé par les lois sur la propriété intellectuelle.
+Toute reproduction ou distribution non autorisée est strictement interdite.
 
-### Production
-1. Configurer l'environnement de production
-2. Optimiser l'application : `php artisan optimize`
-3. Configurer le serveur web (Apache/Nginx)
-4. Configurer la base de données de production
-5. Mettre en place les sauvegardes automatiques
-
-### Docker (optionnel)
-```dockerfile
-FROM php:8.1-fpm
-# Configuration Docker pour la production
-```
-
-## 🤝 Contribution
-
-1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
-
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## 📞 Support
-
-Pour toute question ou problème :
-- Ouvrir une issue sur GitHub
-- Contacter l'équipe de développement
-- Consulter la documentation technique
-
-## 🔄 Mises à jour
-
-### Version 1.0.0
-- ✅ Gestion complète des animaux
-- ✅ Système d'alertes
-- ✅ Tableau de bord interactif
-- ✅ Journal d'activité
-- ✅ Export/Import CSV
-- ✅ API REST
-
-### Prochaines versions
-- 🔄 Application mobile native
-- 🔄 Intégration IoT (capteurs)
-- 🔄 Intelligence artificielle pour les prédictions
-- 🔄 Géolocalisation des animaux
-- 🔄 Intégration avec des systèmes tiers
-
----
-
-**Développé avec ❤️ pour la gestion moderne des fermes d'élevage** 
+© 2025 Ferme d'Élevage - Tous droits réservés 

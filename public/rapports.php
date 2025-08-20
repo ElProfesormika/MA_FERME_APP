@@ -1,6 +1,6 @@
 <?php
-// Inclure la configuration des devises
-require_once 'config_devises.php';
+// Inclure la configuration sécurisée
+require_once 'config_infinityfree.php';
 
 // Traitement du changement de devise
 if (isset($_POST['changer_devise'])) {
@@ -9,28 +9,8 @@ if (isset($_POST['changer_devise'])) {
     exit;
 }
 
-// Configuration de la base de données
-$config = [
-    'host' => 'sql204.infinityfree.com',
-    'database' => 'if0_39665291_ferme_ya',
-    'username' => 'if0_39665291',
-    'password' => 'JPrsDcoxt6DWQ0X',
-    'charset' => 'utf8mb4'
-];
-
-// Fonction pour se connecter à la base de données
-function connectDB($config) {
-    try {
-        $dsn = "mysql:host={$config['host']};dbname={$config['database']};charset={$config['charset']}";
-        $pdo = new PDO($dsn, $config['username'], $config['password']);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $pdo;
-    } catch (PDOException $e) {
-        return false;
-    }
-}
-
-$db = connectDB($config);
+// Connexion à la base de données
+$db = connectDB();
 
 // Traitement des exports
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -133,8 +113,8 @@ function exportStocksCSV($db) {
     
     foreach ($data as $row) {
         // Formater les montants avec conversion automatique
-        $row['prix_unitaire'] = formaterMontantAutomatique($row['prix_unitaire']);
-        $row['valeur_totale'] = formaterMontantAutomatique($row['valeur_totale']);
+        $row['prix_unitaire'] = formaterMontant(convertirDevise($row['prix_unitaire'], 'FCFA', $devise_actuelle), $devise_actuelle);
+        $row['valeur_totale'] = formaterMontant(convertirDevise($row['valeur_totale'], 'FCFA', $devise_actuelle), $devise_actuelle);
         fputcsv($output, $row);
     }
     
@@ -257,8 +237,8 @@ function exportStocksPDF($db) {
     
     // Formater les montants avec conversion automatique
     foreach ($data as &$row) {
-        $row['prix_unitaire'] = formaterMontantAutomatique($row['prix_unitaire']);
-        $row['valeur_totale'] = formaterMontantAutomatique($row['valeur_totale']);
+        $row['prix_unitaire'] = formaterMontant(convertirDevise($row['prix_unitaire'], 'FCFA', $devise_actuelle), $devise_actuelle);
+        $row['valeur_totale'] = formaterMontant(convertirDevise($row['valeur_totale'], 'FCFA', $devise_actuelle), $devise_actuelle);
     }
     
     generatePDF('Rapport des Stocks (' . $devise_actuelle . ')', $data, ['Produit', 'Catégorie', 'Quantité', 'Unité', 'Prix unitaire (' . $devise_actuelle . ')', 'Valeur totale (' . $devise_actuelle . ')', 'Fournisseur']);
@@ -457,6 +437,36 @@ $devise_actuelle = getDeviseActuelle();
         <!-- Statut DB -->
         <div class="alert alert-info">
             <strong>Statut de la base de données :</strong> <?= $dbStatus ?>
+        </div>
+
+        <!-- Affichage des Montants avec Conversion -->
+        <div class="alert alert-success">
+            <h5><i class="fas fa-money-bill-wave"></i> Conversion des Montants</h5>
+            <p><strong>Devise actuelle :</strong> <?= $devise_actuelle ?></p>
+            <?php
+            // Récupérer quelques exemples de montants pour démonstration
+            if ($db) {
+                try {
+                    // Exemple de salaire d'employé
+                    $stmt = $db->query("SELECT salaire FROM employes LIMIT 1");
+                    $employe = $stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($employe) {
+                        $salaire_fcfa = $employe['salaire'];
+                        echo "<p><strong>Exemple de salaire :</strong> " . formaterMontant($salaire_fcfa, 'FCFA') . " = " . formaterMontant(convertirDevise($salaire_fcfa, 'FCFA', 'EUR'), 'EUR') . " = " . formaterMontant(convertirDevise($salaire_fcfa, 'FCFA', 'USD'), 'USD') . "</p>";
+                    }
+                    
+                    // Exemple de prix de stock
+                    $stmt = $db->query("SELECT prix_unitaire FROM stocks LIMIT 1");
+                    $stock = $stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($stock) {
+                        $prix_fcfa = $stock['prix_unitaire'];
+                        echo "<p><strong>Exemple de prix unitaire :</strong> " . formaterMontant($prix_fcfa, 'FCFA') . " = " . formaterMontant(convertirDevise($prix_fcfa, 'FCFA', 'EUR'), 'EUR') . " = " . formaterMontant(convertirDevise($prix_fcfa, 'FCFA', 'USD'), 'USD') . "</p>";
+                    }
+                } catch (Exception $e) {
+                    echo "<p style='color: orange;'>⚠️ Impossible de récupérer les exemples de montants</p>";
+                }
+            }
+            ?>
         </div>
 
         <!-- Statistiques -->

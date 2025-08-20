@@ -1,7 +1,10 @@
 <?php
-// Inclure la configuration des devises et de l'app
-require_once 'config_devises.php';
-require_once 'config_app.php';
+// Inclure la configuration sécurisée
+require_once 'config_infinityfree.php';
+require_once 'auth_config.php';
+
+// Vérifier si l'utilisateur est connecté
+requireLogin();
 
 // Traitement du changement de devise
 if (isset($_POST['changer_devise'])) {
@@ -10,55 +13,11 @@ if (isset($_POST['changer_devise'])) {
     exit;
 }
 
-// Configuration de la base de données
-$config = [
-    'host' => 'sql204.infinityfree.com',
-    'database' => 'if0_39665291_ferme_ya',
-    'username' => 'if0_39665291',
-    'password' => 'JPrsDcoxt6DWQ0X',
-    'charset' => 'utf8mb4'
-];
-
-// Fonction pour se connecter à la base de données
-function connectDB($config) {
-    try {
-        $dsn = "mysql:host={$config['host']};dbname={$config['database']};charset={$config['charset']}";
-        $pdo = new PDO($dsn, $config['username'], $config['password']);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $pdo;
-    } catch (PDOException $e) {
-        return false;
-    }
-}
-
-$db = connectDB($config);
+// Connexion à la base de données via la configuration sécurisée
+$db = connectDB();
 
 // Récupération des statistiques rapides
-function getQuickStats($db) {
-    if (!$db) return [];
-    
-    $stats = [];
-    
-    // Animaux
-    $stmt = $db->query("SELECT COUNT(*) as total FROM animaux");
-    $stats['animaux'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    
-    // Stocks en rupture
-    $stmt = $db->query("SELECT COUNT(*) as total FROM stocks WHERE quantite <= 10");
-    $stats['rupture'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    
-    // Activités aujourd'hui
-    $stmt = $db->query("SELECT COUNT(*) as total FROM activites WHERE date = CURDATE()");
-    $stats['activites_aujourdhui'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    
-    // Alertes actives
-    $stmt = $db->query("SELECT COUNT(*) as total FROM alertes WHERE statut = 'active'");
-    $stats['alertes_actives'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    
-    return $stats;
-}
-
-$stats = getQuickStats($db);
+$stats = getQuickStats();
 $dbStatus = $db ? '✅ Connecté' : '❌ Non connecté';
 $devise_actuelle = getDeviseActuelle();
 ?>
@@ -215,14 +174,37 @@ $devise_actuelle = getDeviseActuelle();
                 <h1 class="display-2 fw-bold text-primary mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
                     <i class="fas fa-tractor me-3"></i><?= htmlspecialchars(app_name()) ?>
                 </h1>
-                <p class="lead text-muted fs-4"><?= htmlspecialchars(app_slogan()) ?></p>
-                <div class="alert alert-info d-inline-block">
-                    <strong>Statut de la base de données :</strong> <?= $dbStatus ?>
-                </div>
+                                 <p class="lead text-muted fs-4"><?= htmlspecialchars(app_slogan()) ?></p>
+                 
+                 <!-- Message de bienvenue personnalisé selon le rôle -->
+                 <div class="alert alert-<?= getRoleColor($_SESSION['user_role']) ?> d-inline-block mb-3">
+                     <strong>Bienvenue <?= htmlspecialchars($_SESSION['user_prenom']) ?> !</strong>
+                     <br>
+                     <small>Rôle : <?= getRoleName($_SESSION['user_role']) ?> - <?= getRoleDescription($_SESSION['user_role']) ?></small>
+                 </div>
+                 
+                 <div class="alert alert-info d-inline-block">
+                     <strong>Statut de la base de données :</strong> <?= $dbStatus ?>
+                 </div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 align-items-center">
+                <!-- Informations utilisateur -->
+                <div class="d-flex align-items-center me-3">
+                    <div class="text-end me-2">
+                        <div class="fw-bold"><?= htmlspecialchars($_SESSION['user_prenom'] . ' ' . $_SESSION['user_nom']) ?></div>
+                        <div class="small text-muted">
+                            <span class="badge bg-<?= getRoleColor($_SESSION['user_role']) ?>">
+                                <?= getRoleName($_SESSION['user_role']) ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="bg-light rounded-circle p-2">
+                        <i class="fas fa-user text-primary"></i>
+                    </div>
+                </div>
+                
                 <!-- Sélecteur de devise -->
-                <form method="POST" class="d-flex align-items-center">
+                <form method="POST" class="d-flex align-items-center me-2">
                     <label class="form-label me-2 mb-0">Devise :</label>
                     <select name="devise" class="form-select form-select-sm me-2" style="width: auto;">
                         <option value="FCFA" <?= $devise_actuelle === 'FCFA' ? 'selected' : '' ?>>FCFA</option>
@@ -235,9 +217,14 @@ $devise_actuelle = getDeviseActuelle();
                 </form>
                 
                 <!-- Bouton d'installation PWA -->
-                <button id="pwa-install-btn" class="btn btn-outline-success btn-sm" style="display: none;">
+                <button id="pwa-install-btn" class="btn btn-outline-success btn-sm me-2" style="display: none;">
                     <i class="fas fa-download"></i> Installer
                 </button>
+                
+                <!-- Bouton déconnexion -->
+                <a href="logout.php" class="btn btn-outline-danger btn-sm" title="Déconnexion">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
             </div>
         </div>
 
@@ -289,159 +276,185 @@ $devise_actuelle = getDeviseActuelle();
 
         <!-- Modules principaux -->
         <div class="row">
-            <!-- Gestion des Animaux -->
-            <div class="col-lg-6">
-                <div class="module-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <i class="fas fa-cow module-icon text-primary"></i>
-                            <h3 class="text-primary">Gestion des Animaux</h3>
-                        </div>
-                        <span class="badge bg-primary fs-6"><?= $stats['animaux'] ?? 0 ?> animaux</span>
-                    </div>
-                    <p class="text-muted mb-4">Gérez votre cheptel : ajout, modification, suivi sanitaire et reproduction</p>
-                    <div class="d-flex gap-2">
-                        <a href="animaux_improved.php" class="btn btn-primary btn-module">
-                            <i class="fas fa-list"></i> Voir les animaux
-                        </a>
-                        <a href="animaux_improved.php" class="btn btn-outline-primary btn-module">
-                            <i class="fas fa-plus"></i> Ajouter
-                        </a>
-                    </div>
-                </div>
-            </div>
+                         <!-- Gestion des Animaux -->
+             <?php if (hasPermission('gestion_animaux')): ?>
+             <div class="col-lg-6">
+                 <div class="module-card">
+                     <div class="d-flex justify-content-between align-items-center mb-3">
+                         <div>
+                             <i class="fas fa-cow module-icon text-primary"></i>
+                             <h3 class="text-primary">Gestion des Animaux</h3>
+                         </div>
+                         <span class="badge bg-primary fs-6"><?= $stats['animaux'] ?? 0 ?> animaux</span>
+                     </div>
+                     <p class="text-muted mb-4">Gérez votre cheptel : ajout, modification, suivi sanitaire et reproduction</p>
+                     <div class="d-flex gap-2">
+                         <a href="animaux_improved.php" class="btn btn-primary btn-module">
+                             <i class="fas fa-list"></i> Voir les animaux
+                         </a>
+                         <?php if (hasPermission('gestion_animaux')): ?>
+                         <a href="animaux_improved.php" class="btn btn-outline-primary btn-module">
+                             <i class="fas fa-plus"></i> Ajouter
+                         </a>
+                         <?php endif; ?>
+                     </div>
+                 </div>
+             </div>
+             <?php endif; ?>
 
-            <!-- Gestion des Stocks -->
-            <div class="col-lg-6">
-                <div class="module-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <i class="fas fa-boxes module-icon text-success"></i>
-                            <h3 class="text-success">Gestion des Stocks</h3>
-                        </div>
-                        <span class="badge bg-danger fs-6"><?= $stats['rupture'] ?? 0 ?> ruptures</span>
-                    </div>
-                    <p class="text-muted mb-4">Inventaire, alertes de rupture et péremption, calcul des valeurs</p>
-                    <div class="d-flex gap-2">
-                        <a href="stocks_improved.php" class="btn btn-success btn-module">
-                            <i class="fas fa-list"></i> Voir les stocks
-                        </a>
-                        <a href="stocks_improved.php" class="btn btn-outline-success btn-module">
-                            <i class="fas fa-plus"></i> Ajouter
-                        </a>
-                    </div>
-                </div>
-            </div>
+                         <!-- Gestion des Stocks -->
+             <?php if (hasPermission('gestion_stocks')): ?>
+             <div class="col-lg-6">
+                 <div class="module-card">
+                     <div class="d-flex justify-content-between align-items-center mb-3">
+                         <div>
+                             <i class="fas fa-boxes module-icon text-success"></i>
+                             <h3 class="text-success">Gestion des Stocks</h3>
+                         </div>
+                         <span class="badge bg-danger fs-6"><?= $stats['rupture'] ?? 0 ?> ruptures</span>
+                     </div>
+                     <p class="text-muted mb-4">Inventaire, alertes de rupture et péremption, calcul des valeurs</p>
+                     <div class="d-flex gap-2">
+                         <a href="stocks_improved.php" class="btn btn-success btn-module">
+                             <i class="fas fa-list"></i> Voir les stocks
+                         </a>
+                         <?php if (hasPermission('gestion_stocks')): ?>
+                         <a href="stocks_improved.php" class="btn btn-outline-success btn-module">
+                             <i class="fas fa-plus"></i> Ajouter
+                         </a>
+                         <?php endif; ?>
+                     </div>
+                 </div>
+             </div>
+             <?php endif; ?>
 
-            <!-- Gestion des Activités -->
-            <div class="col-lg-6">
-                <div class="module-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <i class="fas fa-tasks module-icon text-warning"></i>
-                            <h3 class="text-warning">Gestion des Activités</h3>
-                        </div>
-                        <span class="badge bg-warning fs-6"><?= $stats['activites_aujourdhui'] ?? 0 ?> aujourd'hui</span>
-                    </div>
-                    <p class="text-muted mb-4">Planning des tâches, assignation d'employés, suivi des activités</p>
-                    <div class="d-flex gap-2">
-                        <a href="activites_improved.php" class="btn btn-warning btn-module">
-                            <i class="fas fa-list"></i> Voir les activités
-                        </a>
-                        <a href="activites_improved.php" class="btn btn-outline-warning btn-module">
-                            <i class="fas fa-plus"></i> Ajouter
-                        </a>
-                    </div>
-                </div>
-            </div>
+                         <!-- Gestion des Activités -->
+             <?php if (hasPermission('gestion_activites')): ?>
+             <div class="col-lg-6">
+                 <div class="module-card">
+                     <div class="d-flex justify-content-between align-items-center mb-3">
+                         <div>
+                             <i class="fas fa-tasks module-icon text-warning"></i>
+                             <h3 class="text-warning">Gestion des Activités</h3>
+                         </div>
+                         <span class="badge bg-warning fs-6"><?= $stats['activites_aujourdhui'] ?? 0 ?> aujourd'hui</span>
+                     </div>
+                     <p class="text-muted mb-4">Planning des tâches, assignation d'employés, suivi des activités</p>
+                     <div class="d-flex gap-2">
+                         <a href="activites_improved.php" class="btn btn-warning btn-module">
+                             <i class="fas fa-list"></i> Voir les activités
+                         </a>
+                         <?php if (hasPermission('gestion_activites')): ?>
+                         <a href="activites_improved.php" class="btn btn-outline-warning btn-module">
+                             <i class="fas fa-plus"></i> Ajouter
+                         </a>
+                         <?php endif; ?>
+                     </div>
+                 </div>
+             </div>
+             <?php endif; ?>
 
-            <!-- Gestion des Employés -->
-            <div class="col-lg-6">
-                <div class="module-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <i class="fas fa-users module-icon text-info"></i>
-                            <h3 class="text-info">Gestion des Employés</h3>
-                        </div>
-                        <span class="badge bg-info fs-6">Personnel</span>
-                    </div>
-                    <p class="text-muted mb-4">Gestion du personnel, postes, responsabilités et planning</p>
-                    <div class="d-flex gap-2">
-                        <a href="employes_improved.php" class="btn btn-info btn-module">
-                            <i class="fas fa-list"></i> Voir les employés
-                        </a>
-                        <a href="employes_improved.php" class="btn btn-outline-info btn-module">
-                            <i class="fas fa-plus"></i> Ajouter
-                        </a>
-                    </div>
-                </div>
-            </div>
+                         <!-- Gestion des Employés -->
+             <?php if (hasPermission('gestion_employes')): ?>
+             <div class="col-lg-6">
+                 <div class="module-card">
+                     <div class="d-flex justify-content-between align-items-center mb-3">
+                         <div>
+                             <i class="fas fa-users module-icon text-info"></i>
+                             <h3 class="text-info">Gestion des Employés</h3>
+                         </div>
+                         <span class="badge bg-info fs-6">Personnel</span>
+                     </div>
+                     <p class="text-muted mb-4">Gestion du personnel, postes, responsabilités et planning</p>
+                     <div class="d-flex gap-2">
+                         <a href="employes_improved.php" class="btn btn-info btn-module">
+                             <i class="fas fa-list"></i> Voir les employés
+                         </a>
+                         <?php if (hasPermission('gestion_employes')): ?>
+                         <a href="employes_improved.php" class="btn btn-outline-info btn-module">
+                             <i class="fas fa-plus"></i> Ajouter
+                         </a>
+                         <?php endif; ?>
+                     </div>
+                 </div>
+             </div>
+             <?php endif; ?>
 
-            <!-- Système d'Alertes -->
-            <div class="col-lg-6">
-                <div class="module-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <i class="fas fa-bell module-icon text-danger"></i>
-                            <h3 class="text-danger">Système d'Alertes</h3>
-                        </div>
-                        <span class="badge bg-danger fs-6"><?= $stats['alertes_actives'] ?? 0 ?> actives</span>
-                    </div>
-                    <p class="text-muted mb-4">Surveillance automatique, détection de problèmes, gestion des priorités</p>
-                    <div class="d-flex gap-2">
-                        <a href="alertes_improved.php" class="btn btn-danger btn-module">
-                            <i class="fas fa-exclamation-triangle"></i> Voir les alertes
-                        </a>
-                        <a href="alertes_improved.php" class="btn btn-outline-danger btn-module">
-                            <i class="fas fa-plus"></i> Créer
-                        </a>
-                    </div>
-                </div>
-            </div>
+                         <!-- Système d'Alertes -->
+             <?php if (hasPermission('gestion_alertes')): ?>
+             <div class="col-lg-6">
+                 <div class="module-card">
+                     <div class="d-flex justify-content-between align-items-center mb-3">
+                         <div>
+                             <i class="fas fa-bell module-icon text-danger"></i>
+                             <h3 class="text-danger">Système d'Alertes</h3>
+                         </div>
+                         <span class="badge bg-danger fs-6"><?= $stats['alertes_actives'] ?? 0 ?> actives</span>
+                     </div>
+                     <p class="text-muted mb-4">Surveillance automatique, détection de problèmes, gestion des priorités</p>
+                     <div class="d-flex gap-2">
+                         <a href="alertes_improved.php" class="btn btn-danger btn-module">
+                             <i class="fas fa-exclamation-triangle"></i> Voir les alertes
+                         </a>
+                         <?php if (hasPermission('gestion_alertes')): ?>
+                         <a href="alertes_improved.php" class="btn btn-outline-danger btn-module">
+                             <i class="fas fa-plus"></i> Créer
+                         </a>
+                         <?php endif; ?>
+                     </div>
+                 </div>
+             </div>
+             <?php endif; ?>
 
-            <!-- Rapports et Exports -->
-            <div class="col-lg-6">
-                <div class="module-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <i class="fas fa-chart-bar module-icon text-secondary"></i>
-                            <h3 class="text-secondary">Rapports et Exports</h3>
-                        </div>
-                        <span class="badge bg-secondary fs-6">PDF/CSV</span>
-                    </div>
-                    <p class="text-muted mb-4">Génération de rapports détaillés, exports PDF et CSV</p>
-                    <div class="d-flex gap-2">
-                        <a href="rapports.php" class="btn btn-secondary btn-module">
-                            <i class="fas fa-file-alt"></i> Voir les rapports
-                        </a>
-                        <a href="rapports.php" class="btn btn-outline-secondary btn-module">
-                            <i class="fas fa-download"></i> Exporter
-                        </a>
-                    </div>
-                </div>
-            </div>
+             <!-- Rapports et Exports -->
+             <?php if (hasPermission('rapports')): ?>
+             <div class="col-lg-6">
+                 <div class="module-card">
+                     <div class="d-flex justify-content-between align-items-center mb-3">
+                         <div>
+                             <i class="fas fa-chart-bar module-icon text-secondary"></i>
+                             <h3 class="text-secondary">Rapports et Exports</h3>
+                         </div>
+                         <span class="badge bg-secondary fs-6">PDF/CSV</span>
+                     </div>
+                     <p class="text-muted mb-4">Génération de rapports détaillés, exports PDF et CSV</p>
+                     <div class="d-flex gap-2">
+                         <a href="rapports.php" class="btn btn-secondary btn-module">
+                             <i class="fas fa-file-alt"></i> Voir les rapports
+                         </a>
+                         <?php if (hasPermission('rapports')): ?>
+                         <a href="rapports.php" class="btn btn-outline-secondary btn-module">
+                             <i class="fas fa-download"></i> Exporter
+                         </a>
+                         <?php endif; ?>
+                     </div>
+                 </div>
+             </div>
+             <?php endif; ?>
 
-            <!-- Gestion d'Équipe -->
-            <div class="col-lg-6">
-                <div class="module-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <i class="fas fa-users-cog module-icon text-dark"></i>
-                            <h3 class="text-dark">Gestion d'Équipe</h3>
-                        </div>
-                        <span class="badge bg-dark fs-6">Admin</span>
-                    </div>
-                    <p class="text-muted mb-4">Gérez les accès, rôles et permissions de votre équipe</p>
-                    <div class="d-flex gap-2">
-                        <a href="gestion_equipe.php" class="btn btn-dark btn-module">
-                            <i class="fas fa-users-cog"></i> Gérer l'équipe
-                        </a>
-                        <a href="gestion_equipe.php" class="btn btn-outline-dark btn-module">
-                            <i class="fas fa-user-plus"></i> Ajouter membre
-                        </a>
-                    </div>
-                </div>
-            </div>
+                         <!-- Gestion des Utilisateurs (Admin uniquement) -->
+             <?php if (hasPermission('gestion_utilisateurs')): ?>
+             <div class="col-lg-6">
+                 <div class="module-card">
+                     <div class="d-flex justify-content-between align-items-center mb-3">
+                         <div>
+                             <i class="fas fa-users-cog module-icon text-dark"></i>
+                             <h3 class="text-dark">Gestion des Utilisateurs</h3>
+                         </div>
+                         <span class="badge bg-danger fs-6">Admin</span>
+                     </div>
+                     <p class="text-muted mb-4">Gérez les accès, rôles et permissions de votre équipe</p>
+                     <div class="d-flex gap-2">
+                         <a href="gestion_utilisateurs.php" class="btn btn-dark btn-module">
+                             <i class="fas fa-users-cog"></i> Gérer les utilisateurs
+                         </a>
+                         <a href="register.php" class="btn btn-outline-dark btn-module">
+                             <i class="fas fa-user-plus"></i> Nouveau compte
+                         </a>
+                     </div>
+                 </div>
+             </div>
+             <?php endif; ?>
         </div>
 
         <!-- Liens rapides -->
@@ -449,28 +462,32 @@ $devise_actuelle = getDeviseActuelle();
             <div class="col-12">
                 <div class="module-card">
                     <h4><i class="fas fa-tachometer-alt text-primary me-2"></i> Accès rapides</h4>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <a href="dashboard_fixed.php" class="btn btn-outline-primary w-100 mb-2 btn-module">
-                                <i class="fas fa-chart-line me-2"></i> Dashboard complet
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="convertisseur_devises.php" class="btn btn-outline-success w-100 mb-2 btn-module">
-                                <i class="fas fa-exchange-alt me-2"></i> Convertisseur devises
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="test_system.php" class="btn btn-outline-info w-100 mb-2 btn-module">
-                                <i class="fas fa-clipboard-check me-2"></i> Test du système
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="repair_database.php" class="btn btn-outline-warning w-100 mb-2 btn-module">
-                                <i class="fas fa-tools me-2"></i> Réparation DB
-                            </a>
-                        </div>
-                    </div>
+                                         <div class="row">
+                         <div class="col-md-3">
+                             <a href="check_database.php" class="btn btn-outline-primary w-100 mb-2 btn-module">
+                                 <i class="fas fa-database me-2"></i> Vérifier DB
+                             </a>
+                         </div>
+                         <?php if (hasPermission('convertisseur_devises')): ?>
+                         <div class="col-md-3">
+                             <a href="convertisseur_devises.php" class="btn btn-outline-success w-100 mb-2 btn-module">
+                                 <i class="fas fa-exchange-alt me-2"></i> Convertisseur devises
+                             </a>
+                         </div>
+                         <?php endif; ?>
+                         <?php if (hasPermission('parametres')): ?>
+                         <div class="col-md-3">
+                             <a href="install_infinityfree.php" class="btn btn-outline-info w-100 mb-2 btn-module">
+                                 <i class="fas fa-cog me-2"></i> Configuration
+                             </a>
+                         </div>
+                         <div class="col-md-3">
+                             <a href="clean_installation.php" class="btn btn-outline-warning w-100 mb-2 btn-module">
+                                 <i class="fas fa-broom me-2"></i> Nettoyer
+                             </a>
+                         </div>
+                         <?php endif; ?>
+                     </div>
                 </div>
             </div>
         </div>

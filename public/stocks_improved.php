@@ -1,6 +1,6 @@
 <?php
-// Inclure la configuration des devises
-require_once 'config_devises.php';
+// Inclure la configuration sécurisée
+require_once 'config_infinityfree.php';
 
 // Traitement du changement de devise
 if (isset($_POST['changer_devise'])) {
@@ -9,28 +9,8 @@ if (isset($_POST['changer_devise'])) {
     exit;
 }
 
-// Configuration de la base de données
-$config = [
-    'host' => 'sql204.infinityfree.com',
-    'database' => 'if0_39665291_ferme_ya',
-    'username' => 'if0_39665291',
-    'password' => 'JPrsDcoxt6DWQ0X',
-    'charset' => 'utf8mb4'
-];
-
-// Fonction pour se connecter à la base de données
-function connectDB($config) {
-    try {
-        $dsn = "mysql:host={$config['host']};dbname={$config['database']};charset={$config['charset']}";
-        $pdo = new PDO($dsn, $config['username'], $config['password']);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $pdo;
-    } catch (PDOException $e) {
-        return false;
-    }
-}
-
-$db = connectDB($config);
+// Connexion à la base de données
+$db = connectDB();
 $devise_actuelle = getDeviseActuelle();
 
 // Traitement des actions avec redirection
@@ -267,7 +247,7 @@ $message = $_GET['message'] ?? '';
             <div class="col-md-3">
                 <div class="stat-card text-center">
                     <i class="fas fa-euro-sign fa-2x mb-2"></i>
-                    <h3><?= formaterMontantAutomatique($stats['valeur']) ?></h3>
+                                            <h3><?= formaterMontant(convertirDevise($stats['valeur'], 'FCFA', $devise_actuelle), $devise_actuelle) ?></h3>
                     <p class="mb-0">Valeur totale</p>
                 </div>
             </div>
@@ -319,8 +299,8 @@ $message = $_GET['message'] ?? '';
                                             <span class="badge bg-danger ms-1">Faible</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= formaterMontantAutomatique($stock['prix_unitaire']) ?></td>
-                                    <td><strong><?= formaterMontantAutomatique($stock['quantite'] * $stock['prix_unitaire']) ?></strong></td>
+                                    <td><?= formaterMontant(convertirDevise($stock['prix_unitaire'], 'FCFA', $devise_actuelle), $devise_actuelle) ?></td>
+                                    <td><strong><?= formaterMontant(convertirDevise($stock['quantite'] * $stock['prix_unitaire'], 'FCFA', $devise_actuelle), $devise_actuelle) ?></strong></td>
                                     <td><?= htmlspecialchars($stock['categorie']) ?></td>
                                     <td><?= htmlspecialchars($stock['fournisseur']) ?></td>
                                     <td><?= date('d/m/Y', strtotime($stock['date_entree'])) ?></td>

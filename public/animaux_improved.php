@@ -1,6 +1,6 @@
 <?php
-// Inclure la configuration des devises
-require_once 'config_devises.php';
+// Inclure la configuration sécurisée
+require_once 'config_infinityfree.php';
 
 // Traitement du changement de devise
 if (isset($_POST['changer_devise'])) {
@@ -9,28 +9,8 @@ if (isset($_POST['changer_devise'])) {
     exit;
 }
 
-// Configuration de la base de données
-$config = [
-    'host' => 'sql204.infinityfree.com',
-    'database' => 'if0_39665291_ferme_ya',
-    'username' => 'if0_39665291',
-    'password' => 'JPrsDcoxt6DWQ0X',
-    'charset' => 'utf8mb4'
-];
-
-// Fonction pour se connecter à la base de données
-function connectDB($config) {
-    try {
-        $dsn = "mysql:host={$config['host']};dbname={$config['database']};charset={$config['charset']}";
-        $pdo = new PDO($dsn, $config['username'], $config['password']);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $pdo;
-    } catch (PDOException $e) {
-        return false;
-    }
-}
-
-$db = connectDB($config);
+// Connexion à la base de données
+$db = connectDB();
 
 // Traitement des actions avec redirection
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
