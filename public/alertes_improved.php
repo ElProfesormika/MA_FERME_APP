@@ -117,8 +117,8 @@ function detecterAlertesAutomatiques($db) {
         $stmt = $db->query("
             SELECT id, produit, date_peremption FROM stocks 
             WHERE date_peremption IS NOT NULL 
-            AND date_peremption <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-            AND date_peremption > CURDATE()
+                    AND date_peremption <= date('now', '+30 days')
+        AND date_peremption > date('now')
             AND id NOT IN (SELECT reference_id FROM alertes WHERE type = 'stock_peremption' AND statut = 'active')
         ");
         $peremptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -140,7 +140,7 @@ function detecterAlertesAutomatiques($db) {
         // Alertes d'activités en retard
         $stmt = $db->query("
             SELECT id, titre, date FROM activites 
-            WHERE date < CURDATE() 
+            WHERE date < date('now') 
             AND statut = 'planifie'
             AND id NOT IN (SELECT reference_id FROM alertes WHERE type = 'activite_retard' AND statut = 'active')
         ");
