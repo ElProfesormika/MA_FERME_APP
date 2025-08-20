@@ -69,6 +69,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message = $success ? "Alerte marquée comme résolue !" : "Erreur lors de la résolution";
                 }
                 break;
+                
+            case 'create_test_alerts':
+                if ($db) {
+                    $alertes_test = [
+                        [
+                            'titre' => 'Maintenance préventive',
+                            'message' => 'Vérification des systèmes d\'irrigation prévue cette semaine',
+                            'type' => 'maintenance',
+                            'priorite' => 'normale'
+                        ],
+                        [
+                            'titre' => 'Vaccination des animaux',
+                            'message' => 'Vaccination des bovins prévue cette semaine',
+                            'type' => 'sante',
+                            'priorite' => 'haute'
+                        ],
+                        [
+                            'titre' => 'Révision des stocks',
+                            'message' => 'Inventaire complet des stocks à effectuer',
+                            'type' => 'administratif',
+                            'priorite' => 'moyenne'
+                        ]
+                    ];
+                    
+                    $success = true;
+                    foreach ($alertes_test as $alerte) {
+                        $stmt = $db->prepare("
+                            INSERT INTO alertes (titre, message, type, priorite, statut, date_creation)
+                            VALUES (?, ?, ?, ?, 'active', datetime('now'))
+                        ");
+                        if (!$stmt->execute([
+                            $alerte['titre'],
+                            $alerte['message'],
+                            $alerte['type'],
+                            $alerte['priorite']
+                        ])) {
+                            $success = false;
+                        }
+                    }
+                    $message = $success ? "Alertes de test créées avec succès !" : "Erreur lors de la création des alertes de test";
+                }
+                break;
         }
         
         // Redirection avec message
@@ -78,11 +120,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Détection automatique des alertes
+// Détection automatique des alertes pour SQLite
 function detecterAlertesAutomatiques($db) {
     if (!$db) return;
     
     try {
+        // Vérifier si des alertes existent déjà pour éviter les doublons
+        $existing_alerts = $db->query("SELECT COUNT(*) as count FROM alertes")->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        // Si il y a déjà des alertes, ne pas en créer de nouvelles automatiquement
+        if ($existing_alerts > 0) {
+            return;
+        }
         
         // Alertes de stock en rupture
         $stmt = $db->query("
@@ -141,6 +190,44 @@ function detecterAlertesAutomatiques($db) {
                 "L'activité {$retard['titre']} était prévue le " . date('d/m/Y', strtotime($retard['date']))
             ]);
         }
+        
+        // Créer quelques alertes de test si aucune alerte n'existe
+        if ($existing_alerts == 0) {
+            $alertes_test = [
+                [
+                    'titre' => 'Maintenance préventive',
+                    'message' => 'Vérification des systèmes d\'irrigation prévue cette semaine',
+                    'type' => 'maintenance',
+                    'priorite' => 'normale'
+                ],
+                [
+                    'titre' => 'Vaccination des animaux',
+                    'message' => 'Vaccination des bovins prévue cette semaine',
+                    'type' => 'sante',
+                    'priorite' => 'haute'
+                ],
+                [
+                    'titre' => 'Révision des stocks',
+                    'message' => 'Inventaire complet des stocks à effectuer',
+                    'type' => 'administratif',
+                    'priorite' => 'moyenne'
+                ]
+            ];
+            
+            foreach ($alertes_test as $alerte) {
+                $stmt = $db->prepare("
+                    INSERT INTO alertes (titre, message, type, priorite, statut, date_creation)
+                    VALUES (?, ?, ?, ?, 'active', datetime('now'))
+                ");
+                $stmt->execute([
+                    $alerte['titre'],
+                    $alerte['message'],
+                    $alerte['type'],
+                    $alerte['priorite']
+                ]);
+            }
+        }
+        
     } catch (PDOException $e) {
         // En cas d'erreur, on log mais on ne fait pas planter l'application
         error_log("Erreur lors de la détection automatique des alertes: " . $e->getMessage());
@@ -156,52 +243,75 @@ if ($db) {
     }
 }
 
-// Récupération des alertes
+// Récupération des alertes pour SQLite
 function getAlertes($db) {
     if (!$db) return [];
     
     try {
-        // Requête simplifiée pour SQLite
+        // Requête optimisée pour SQLite
         $stmt = $db->query("
-            SELECT * FROM alertes 
-            ORDER BY 
-                CASE priorite 
-                    WHEN 'critique' THEN 1 
-                    WHEN 'haute' THEN 2 
-                    WHEN 'moyenne' THEN 3 
-                    WHEN 'basse' THEN 4 
-                END,
-                date_creation DESC
+            SELECT 
+                id,
+                titre,
+                message,
+                type,
+                priorite,
+                statut,
+                date_creation,
+                date_resolution,
+                CASE 
+                    WHEN priorite = 'critique' THEN 1 
+                    WHEN priorite = 'haute' THEN 2 
+                    WHEN priorite = 'moyenne' THEN 3 
+                    WHEN priorite = 'basse' THEN 4 
+                    ELSE 5
+                END as ordre_priorite
+            FROM alertes 
+            ORDER BY ordre_priorite ASC, date_creation DESC
         ");
         
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $alertes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Debug: Log le nombre d'alertes trouvées
+        error_log("DEBUG: getAlertes() a trouvé " . count($alertes) . " alertes");
+        
+        return $alertes;
     } catch (PDOException $e) {
         error_log("Erreur lors de la récupération des alertes: " . $e->getMessage());
         return [];
     }
 }
 
-// Récupération des statistiques
+// Récupération des statistiques pour SQLite
 function getAlerteStats($db) {
     if (!$db) return [];
     
     $stats = [];
     
-    // Total des alertes
-    $stmt = $db->query("SELECT COUNT(*) as total FROM alertes");
-    $stats['total'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    
-    // Alertes actives
-    $stmt = $db->query("SELECT COUNT(*) as total FROM alertes WHERE statut = 'active'");
-    $stats['actives'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    
-    // Alertes critiques
-    $stmt = $db->query("SELECT COUNT(*) as total FROM alertes WHERE priorite = 'critique' AND statut = 'active'");
-    $stats['critiques'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    
-    // Alertes aujourd'hui
-    $stmt = $db->query("SELECT COUNT(*) as total FROM alertes WHERE date(date_creation) = date('now')");
-    $stats['aujourdhui'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    try {
+        // Total des alertes
+        $stmt = $db->query("SELECT COUNT(*) as total FROM alertes");
+        $stats['total'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+        
+        // Alertes actives
+        $stmt = $db->query("SELECT COUNT(*) as total FROM alertes WHERE statut = 'active'");
+        $stats['actives'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+        
+        // Alertes critiques
+        $stmt = $db->query("SELECT COUNT(*) as total FROM alertes WHERE priorite = 'critique' AND statut = 'active'");
+        $stats['critiques'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+        
+        // Alertes aujourd'hui
+        $stmt = $db->query("SELECT COUNT(*) as total FROM alertes WHERE date(date_creation) = date('now')");
+        $stats['aujourdhui'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+        
+        // Debug: Log les statistiques
+        error_log("DEBUG: Stats alertes - Total: {$stats['total']}, Actives: {$stats['actives']}, Critiques: {$stats['critiques']}, Aujourd'hui: {$stats['aujourdhui']}");
+        
+    } catch (PDOException $e) {
+        error_log("Erreur lors de la récupération des statistiques: " . $e->getMessage());
+        $stats = ['total' => 0, 'actives' => 0, 'critiques' => 0, 'aujourdhui' => 0];
+    }
     
     return $stats;
 }
@@ -211,18 +321,7 @@ $stats = getAlerteStats($db);
 $dbStatus = $db ? '✅ Connecté' : '❌ Non connecté';
 $devise_actuelle = getDeviseActuelle();
 
-// Debug: Afficher les alertes pour diagnostic
-if (empty($alertes) && $stats['total'] > 0) {
-    error_log("DEBUG: Stats montrent " . $stats['total'] . " alertes mais getAlertes() retourne vide");
-    // Essayer une requête directe pour debug
-    try {
-        $debug_stmt = $db->query("SELECT * FROM alertes LIMIT 5");
-        $debug_alertes = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
-        error_log("DEBUG: Requête directe retourne " . count($debug_alertes) . " alertes");
-    } catch (Exception $e) {
-        error_log("DEBUG: Erreur requête directe: " . $e->getMessage());
-    }
-}
+
 
 // Récupération des messages
 $status = $_GET['status'] ?? '';
@@ -360,11 +459,19 @@ $message = $_GET['message'] ?? '';
             </div>
         </div>
 
-        <!-- Bouton Ajouter -->
-        <div class="mb-4">
+        <!-- Boutons d'action -->
+        <div class="mb-4 d-flex gap-2">
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAlerteModal" onclick="resetAddAlerteForm()">
                 <i class="fas fa-plus"></i> Créer une alerte manuelle
             </button>
+            <?php if (empty($alertes)): ?>
+                <form method="POST" style="display: inline;">
+                    <input type="hidden" name="action" value="create_test_alerts">
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-magic"></i> Créer des alertes de test
+                    </button>
+                </form>
+            <?php endif; ?>
         </div>
 
         <!-- Tableau des alertes -->
@@ -399,8 +506,8 @@ $message = $_GET['message'] ?? '';
                                 <tr class="alerte-<?= $alerte['statut'] === 'resolue' ? 'resolue' : $alerte['priorite'] ?>">
                                     <td>
                                         <strong><?= htmlspecialchars($alerte['titre']) ?></strong>
-                                        <?php if ($alerte['description']): ?>
-                                            <br><small class="text-muted"><?= htmlspecialchars($alerte['description']) ?></small>
+                                        <?php if ($alerte['message']): ?>
+                                            <br><small class="text-muted"><?= htmlspecialchars($alerte['message']) ?></small>
                                         <?php endif; ?>
                                     </td>
                                     <td>
