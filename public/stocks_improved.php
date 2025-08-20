@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $prix_saisi = isset($_POST['prix_unitaire']) ? (float)$_POST['prix_unitaire'] : 0.0;
                     $prix_fcfa = ($devise_actuelle === 'FCFA') ? $prix_saisi : convertirDevise($prix_saisi, $devise_actuelle, 'FCFA');
                     $stmt = $db->prepare("
-                        INSERT INTO stocks (produit, quantite, unite, date_entree, date_peremption, prix_unitaire, fournisseur, categorie, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                        INSERT INTO stocks (produit, quantite, unite, date_entree, date_peremption, prix_unitaire, fournisseur, categorie, date_creation)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
                     ");
                     $success = $stmt->execute([
                         $_POST['produit'],
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $prix_fcfa = ($devise_actuelle === 'FCFA') ? $prix_saisi : convertirDevise($prix_saisi, $devise_actuelle, 'FCFA');
                     $stmt = $db->prepare("
                         UPDATE stocks 
-                        SET produit = ?, quantite = ?, unite = ?, date_entree = ?, date_peremption = ?, prix_unitaire = ?, fournisseur = ?, categorie = ?, updated_at = NOW()
+                        SET produit = ?, quantite = ?, unite = ?, date_entree = ?, date_peremption = ?, prix_unitaire = ?, fournisseur = ?, categorie = ?
                         WHERE id = ?
                     ");
                     $success = $stmt->execute([

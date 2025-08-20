@@ -22,8 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'add':
                 if ($db) {
                     $stmt = $db->prepare("
-                        INSERT INTO animaux (nom, espece, race, date_naissance, poids, sexe, employe_id, statut, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, 'actif', NOW(), NOW())
+                        INSERT INTO animaux (nom, espece, race, date_naissance, poids, sexe, employe_id, statut, date_creation)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, 'actif', datetime('now'))
                     ");
                     $success = $stmt->execute([
                         $_POST['nom'],
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($db) {
                     $stmt = $db->prepare("
                         UPDATE animaux 
-                        SET nom = ?, espece = ?, race = ?, date_naissance = ?, poids = ?, sexe = ?, employe_id = ?, updated_at = NOW()
+                        SET nom = ?, espece = ?, race = ?, date_naissance = ?, poids = ?, sexe = ?, employe_id = ?
                         WHERE id = ?
                     ");
                     $success = $stmt->execute([

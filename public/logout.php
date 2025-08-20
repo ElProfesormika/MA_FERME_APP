@@ -3,8 +3,10 @@
 require_once 'config_sqlite.php';
 require_once 'auth_config.php';
 
-// Démarrer la session
-session_start();
+// Démarrer la session seulement si elle n'est pas déjà active
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Détruire toutes les variables de session
 $_SESSION = array();

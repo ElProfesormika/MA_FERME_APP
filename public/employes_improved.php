@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $salaire_saisi = isset($_POST['salaire']) ? (float)$_POST['salaire'] : 0.0;
                     $salaire_fcfa = ($devise_actuelle === 'FCFA') ? $salaire_saisi : convertirDevise($salaire_saisi, $devise_actuelle, 'FCFA');
                     $stmt = $db->prepare("
-                        INSERT INTO employes (nom_complet, poste, date_embauche, salaire, telephone, email, adresse, statut, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, 'actif', NOW(), NOW())
+                        INSERT INTO employes (nom_complet, poste, date_embauche, salaire, telephone, email, adresse, statut, date_creation)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, 'actif', datetime('now'))
                     ");
                     $success = $stmt->execute([
                         $_POST['nom_complet'],
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $salaire_fcfa = ($devise_actuelle === 'FCFA') ? $salaire_saisi : convertirDevise($salaire_saisi, $devise_actuelle, 'FCFA');
                     $stmt = $db->prepare("
                         UPDATE employes 
-                        SET nom_complet = ?, poste = ?, date_embauche = ?, salaire = ?, telephone = ?, email = ?, adresse = ?, statut = ?, updated_at = NOW()
+                        SET nom_complet = ?, poste = ?, date_embauche = ?, salaire = ?, telephone = ?, email = ?, adresse = ?, statut = ?
                         WHERE id = ?
                     ");
                     $success = $stmt->execute([

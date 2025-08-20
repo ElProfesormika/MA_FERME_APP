@@ -22,8 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'add':
                 if ($db) {
                     $stmt = $db->prepare("
-                        INSERT INTO activites (titre, description, date, heure_debut, heure_fin, type, statut, employe_id, animal_id, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, 'planifie', ?, ?, NOW(), NOW())
+                        INSERT INTO activites (titre, description, date, heure_debut, heure_fin, type, statut, employe_id, animal_id, date_creation)
+                        VALUES (?, ?, ?, ?, ?, ?, 'planifie', ?, ?, datetime('now'))
                     ");
                     $success = $stmt->execute([
                         $_POST['titre'],
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($db) {
                     $stmt = $db->prepare("
                         UPDATE activites 
-                        SET titre = ?, description = ?, date = ?, heure_debut = ?, heure_fin = ?, type = ?, statut = ?, employe_id = ?, animal_id = ?, updated_at = NOW()
+                        SET titre = ?, description = ?, date = ?, heure_debut = ?, heure_fin = ?, type = ?, statut = ?, employe_id = ?, animal_id = ?
                         WHERE id = ?
                     ");
                     $success = $stmt->execute([

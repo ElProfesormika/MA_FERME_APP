@@ -22,13 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'add':
                 if ($db) {
                     $stmt = $db->prepare("
-                        INSERT INTO alertes (type, message, critique, statut, created_at, updated_at)
-                        VALUES (?, ?, ?, 'active', NOW(), NOW())
+                        INSERT INTO alertes (titre, message, type, priorite, statut, date_creation)
+                        VALUES (?, ?, ?, ?, 'active', datetime('now'))
                     ");
                     $success = $stmt->execute([
-                        $_POST['type'],
+                        $_POST['titre'] ?? 'Alerte',
                         $_POST['description'],
-                        $_POST['priorite'] === 'critique' ? 1 : 0
+                        $_POST['type'],
+                        $_POST['priorite'] ?? 'normale'
                     ]);
                     $message = $success ? "Alerte créée avec succès !" : "Erreur lors de la création";
                 }
@@ -38,13 +39,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($db) {
                     $stmt = $db->prepare("
                         UPDATE alertes 
-                        SET type = ?, message = ?, critique = ?, statut = ?, updated_at = NOW()
+                        SET titre = ?, message = ?, type = ?, priorite = ?, statut = ?
                         WHERE id = ?
                     ");
                     $success = $stmt->execute([
-                        $_POST['type'],
+                        $_POST['titre'] ?? 'Alerte',
                         $_POST['description'],
-                        $_POST['priorite'] === 'critique' ? 1 : 0,
+                        $_POST['type'],
+                        $_POST['priorite'] ?? 'normale',
                         $_POST['statut'],
                         $_POST['id']
                     ]);
@@ -62,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
             case 'resolve':
                 if ($db) {
-                    $stmt = $db->prepare("UPDATE alertes SET statut = 'resolue', updated_at = NOW() WHERE id = ?");
+                    $stmt = $db->prepare("UPDATE alertes SET statut = 'resolue', date_resolution = datetime('now') WHERE id = ?");
                     $success = $stmt->execute([$_POST['id']]);
                     $message = $success ? "Alerte marquée comme résolue !" : "Erreur lors de la résolution";
                 }
