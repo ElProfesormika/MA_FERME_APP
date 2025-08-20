@@ -2,11 +2,23 @@
 // Script temporaire pour initialiser la base de données sur Railway
 // À supprimer après utilisation
 
-// Configuration Railway - Utilisation des variables d'environnement Railway
-$host = $_ENV['RAILWAY_PRIVATE_DOMAIN'] ?? $_ENV['MYSQLHOST'] ?? 'localhost';
-$database = $_ENV['MYSQL_DATABASE'] ?? $_ENV['MYSQLDATABASE'] ?? 'railway';
-$username = $_ENV['MYSQL_USERNAME'] ?? $_ENV['MYSQLUSER'] ?? 'root';
-$password = $_ENV['MYSQL_ROOT_PASSWORD'] ?? $_ENV['MYSQLPASSWORD'] ?? '';
+// Configuration Railway - Utilisation de MYSQL_URL si disponible
+$mysql_url = $_ENV['MYSQL_URL'] ?? '';
+
+if (!empty($mysql_url)) {
+    // Parser l'URL MySQL
+    $url_parts = parse_url($mysql_url);
+    $host = $url_parts['host'] ?? $_ENV['RAILWAY_PRIVATE_DOMAIN'] ?? 'localhost';
+    $database = trim($url_parts['path'] ?? '', '/') ?: 'railway';
+    $username = $url_parts['user'] ?? 'root';
+    $password = $url_parts['pass'] ?? '';
+} else {
+    // Fallback vers les variables individuelles
+    $host = $_ENV['RAILWAY_PRIVATE_DOMAIN'] ?? $_ENV['MYSQLHOST'] ?? 'localhost';
+    $database = $_ENV['MYSQL_DATABASE'] ?? $_ENV['MYSQLDATABASE'] ?? 'railway';
+    $username = $_ENV['MYSQL_USERNAME'] ?? $_ENV['MYSQLUSER'] ?? 'root';
+    $password = $_ENV['MYSQL_ROOT_PASSWORD'] ?? $_ENV['MYSQLPASSWORD'] ?? '';
+}
 
 // Debug: Afficher les variables disponibles
 echo "<h2>🔍 Debug - Variables d'environnement disponibles :</h2>";
@@ -24,6 +36,9 @@ echo "<li><strong>Host:</strong> $host</li>";
 echo "<li><strong>Database:</strong> $database</li>";
 echo "<li><strong>User:</strong> $username</li>";
 echo "<li><strong>Password:</strong> " . (strlen($password) > 0 ? '***' : 'Non défini') . "</li>";
+if (!empty($mysql_url)) {
+    echo "<li><strong>MYSQL_URL utilisée:</strong> " . str_replace($password, '***', $mysql_url) . "</li>";
+}
 echo "</ul>";
 
 // Test de connexion avec les valeurs exactes si les variables ne sont pas définies
@@ -44,7 +59,10 @@ if (empty($password)) {
 
 try {
     // Connexion à la base de données
-    $pdo = new PDO("mysql:host=$host;dbname=$database;charset=utf8mb4", $username, $password);
+    $dsn = "mysql:host=$host;dbname=$database;charset=utf8mb4";
+    echo "<h3>🔌 Tentative de connexion avec : $dsn</h3>";
+    
+    $pdo = new PDO($dsn, $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     echo "<h2>✅ Connexion réussie à la base de données Railway</h2>";
@@ -211,12 +229,14 @@ try {
 } catch (PDOException $e) {
     echo "<h2>❌ Erreur de connexion</h2>";
     echo "<p><strong>Erreur :</strong> " . $e->getMessage() . "</p>";
-    echo "<p><strong>Solution :</strong> Configurez les variables d'environnement dans Railway</p>";
-    echo "<p><strong>Variables nécessaires :</strong></p>";
-    echo "<ul>";
-    echo "<li>MYSQL_DATABASE = railway</li>";
-    echo "<li>MYSQL_USERNAME = root</li>";
-    echo "<li>MYSQL_ROOT_PASSWORD = jVfXUYOQJMKRdZwVFgqouoTqubfanCfZ</li>";
-    echo "</ul>";
+    echo "<p><strong>DSN utilisé :</strong> mysql:host=$host;dbname=$database;charset=utf8mb4</p>";
+    echo "<p><strong>Solution :</strong> Vérifiez que le service MySQL est démarré dans Railway</p>";
+    echo "<p><strong>Étapes :</strong></p>";
+    echo "<ol>";
+    echo "<li>Allez dans Railway</li>";
+    echo "<li>Cliquez sur le service MySQL</li>";
+    echo "<li>Vérifiez qu'il est démarré (statut vert)</li>";
+    echo "<li>Vérifiez les variables d'environnement du service MySQL</li>";
+    echo "</ol>";
 }
 ?>
